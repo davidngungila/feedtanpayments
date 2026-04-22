@@ -541,4 +541,30 @@ class DashboardController extends Controller
     {
         return view('shares.reports');
     }
+
+    // Integration Settings
+    public function integration()
+    {
+        return view('system-settings.integration');
+    }
+
+    public function integrationCreate()
+    {
+        return view('system-settings.integration-create');
+    }
+
+    public function integrationSmsApi()
+    {
+        return view('system-settings.integrations.sms-api');
+    }
+
+    public function integrationEmailApi()
+    {
+        return view('system-settings.integrations.email-api');
+    }
+
+    public function integrationPaymentApi()
+    {
+        return view('system-settings.integrations.payment-api');
+    }
 }

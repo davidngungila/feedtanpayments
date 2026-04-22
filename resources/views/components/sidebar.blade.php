@@ -109,6 +109,36 @@
             </ul>
         </li>
 
+        <!-- Messaging -->
+        <li class="menu-item {{ request()->routeIs('messaging*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-message-square-dots"></i>
+                <div class="text-truncate" data-i18n="Messaging">Messaging</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('messaging.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('messaging.dashboard') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Dashboard">Dashboard</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('messaging.sms') ? 'active' : '' }}">
+                    <a href="{{ route('messaging.sms') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n">Send SMS</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('messaging.email') ? 'active' : '' }}">
+                    <a href="{{ route('messaging.email') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n">Send Email</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('messaging.services') ? 'active' : '' }}">
+                    <a href="{{ route('messaging.services') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n">Services</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <!-- Members -->
         <li class="menu-item {{ request()->routeIs('members*') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">

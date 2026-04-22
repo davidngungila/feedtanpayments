@@ -49,6 +49,7 @@ Route::prefix('members')->name('members.')->group(function () {
     Route::get('/reports', [DashboardController::class, 'membersReports'])->name('reports');
 });
 
+
 // Investment routes
 Route::prefix('investment')->name('investment.')->group(function () {
     Route::get('/view', [DashboardController::class, 'investmentView'])->name('view');
@@ -114,6 +115,9 @@ Route::prefix('system-settings')->name('system-settings.')->middleware(['admin']
     Route::get('/integration', [DashboardController::class, 'systemIntegration'])->name('integration');
     Route::get('/integration/create', [DashboardController::class, 'createIntegration'])->name('integration.create');
     Route::get('/integration/edit/{id}', [DashboardController::class, 'editIntegration'])->name('integration.edit');
+    Route::get('/integration/sms-api', [DashboardController::class, 'integrationSmsApi'])->name('integration.sms-api');
+    Route::get('/integration/email-api', [DashboardController::class, 'integrationEmailApi'])->name('integration.email-api');
+    Route::get('/integration/payment-api', [DashboardController::class, 'integrationPaymentApi'])->name('integration.payment-api');
     Route::get('/maintenance', [DashboardController::class, 'systemMaintenance'])->name('maintenance');
     Route::get('/health', [DashboardController::class, 'systemHealth'])->name('health');
     Route::get('/audit', [DashboardController::class, 'systemAudit'])->name('audit');
@@ -141,6 +145,30 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
     Route::delete('/general-settings/{id}', [DashboardController::class, 'deleteGeneralSetting']);
     Route::get('/payment-settings/{id}', [DashboardController::class, 'getPaymentSetting']);
     Route::delete('/payment-settings/{id}', [DashboardController::class, 'deletePaymentSetting']);
+});
+
+// Test messaging controller
+Route::get('/test-messaging', function() {
+    return response()->json(['message' => 'Messaging routes working']);
+});
+
+// Messaging System Routes
+Route::prefix('messaging')->middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [MessagingController::class, 'dashboard'])->name('messaging.dashboard');
+    
+    // SMS Routes
+    Route::get('/sms', [MessagingController::class, 'smsIndex'])->name('messaging.sms');
+    Route::post('/sms/send', [MessagingController::class, 'sendSms'])->name('messaging.sms.send');
+    
+    // Email Routes
+    Route::get('/email', [MessagingController::class, 'emailIndex'])->name('messaging.email');
+    Route::post('/email/send', [MessagingController::class, 'sendEmail'])->name('messaging.email.send');
+    
+    // Services Management Routes
+    Route::get('/services', [MessagingController::class, 'servicesIndex'])->name('messaging.services');
+    Route::post('/services', [MessagingController::class, 'storeService'])->name('messaging.services.store');
+    Route::put('/services/{service}', [MessagingController::class, 'updateService'])->name('messaging.services.update');
+    Route::post('/services/{service}/test', [MessagingController::class, 'testService'])->name('messaging.services.test');
 });
 
 // Other routes
