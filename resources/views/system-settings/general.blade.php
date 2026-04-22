@@ -5,185 +5,338 @@
 @section('content')
 <div class="content-wrapper">
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-4">General Settings</h4>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">General Settings</h4>
+            <div>
+                <button type="button" class="btn btn-primary" onclick="addSetting()">
+                    <i class="bx bx-plus me-2"></i>Add Setting
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="refreshSettings()">
+                    <i class="bx bx-refresh me-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="row">
-            <!-- System Configuration -->
-            <div class="col-md-6 mb-4">
+            <!-- Settings Table -->
+            <div class="col-12 mb-4">
                 <div class="card">
                     <div class="card-header">
                         <h5 class="card-title mb-0">System Configuration</h5>
                     </div>
                     <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">System Name</label>
-                            <input type="text" class="form-control" value="FeedTan Pay" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">System Version</label>
-                            <input type="text" class="form-control" value="v1.0.0" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">System Timezone</label>
-                            <select class="form-select">
-                                <option value="America/New_York" selected>America/New_York (TZS)</option>
-                                <option value="Europe/London">Europe/London</option>
-                                <option value="Asia/Tokyo">Asia/Tokyo</option>
-                                <option value="Australia/Sydney">Australia/Sydney</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Default Currency</label>
-                            <select class="form-select">
-                                <option value="USD" selected>USD - US Dollar</option>
-                                <option value="EUR">EUR - Euro</option>
-                                <option value="GBP">GBP - British Pound</option>
-                                <option value="JPY">JPY - Japanese Yen</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Date Format</label>
-                            <select class="form-select">
-                                <option value="MM/DD/YYYY" selected>MM/DD/YYYY</option>
-                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                            </select>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Setting Key</th>
+                                        <th>Value</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Public</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($settings as $setting)
+                                        <tr>
+                                            <td>
+                                                <code>{{ $setting->setting_key }}</code>
+                                            </td>
+                                            <td>
+                                                @if ($setting->setting_type === 'boolean')
+                                                    <span class="badge bg-{{ $setting->setting_value === 'true' ? 'success' : 'danger' }}">
+                                                        {{ $setting->setting_value === 'true' ? 'Enabled' : 'Disabled' }}
+                                                    </span>
+                                                @elseif ($setting->setting_type === 'json')
+                                                    <code>{{ Str::limit($setting->setting_value, 50) }}</code>
+                                                @else
+                                                    {{ Str::limit($setting->setting_value, 30) }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ $setting->setting_type }}</span>
+                                            </td>
+                                            <td>{{ $setting->description ?? 'N/A' }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ $setting->is_public ? 'success' : 'secondary' }}">
+                                                    {{ $setting->is_public ? 'Yes' : 'No' }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                        <i class="bx bx-dots-horizontal-rounded"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <a class="dropdown-item" href="javascript:void(0)" onclick="viewSetting({{ $setting->id }})">
+                                                                <i class="bx bx-eye me-2"></i>View Details
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="javascript:void(0)" onclick="editSetting({{ $setting->id }})">
+                                                                <i class="bx bx-edit me-2"></i>Edit
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="javascript:void(0)" onclick="deleteSetting({{ $setting->id }})">
+                                                                <i class="bx bx-trash me-2"></i>Delete
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4">
+                                                <i class="bx bx-inbox bx-lg text-muted"></i>
+                                                <p class="text-muted mb-0">No settings found. Click "Add Setting" to create your first setting.</p>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
 
-            <!-- Application Settings -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Application Settings</h5>
+<!-- Add/Edit Setting Modal -->
+<div class="modal fade" id="settingModal" tabindex="-1" aria-labelledby="settingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingModalLabel">Add Setting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="settingForm" action="{{ route('system-settings.general.store') }}" method="POST">
+                @csrf
+                <input type="hidden" id="settingId" name="setting_id" value="">
+                <input type="hidden" id="settingMethod" name="_method" value="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="settingKey" class="form-label">Setting Key</label>
+                        <input type="text" class="form-control" id="settingKey" name="setting_key" required>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">Default Language</label>
-                            <select class="form-select">
-                                <option value="en" selected>English</option>
-                                <option value="es">Spanish</option>
-                                <option value="fr">French</option>
-                                <option value="de">German</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Theme</label>
-                            <select class="form-select">
-                                <option value="light" selected>Light</option>
-                                <option value="dark">Dark</option>
-                                <option value="auto">Auto</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Items Per Page</label>
-                            <select class="form-select">
-                                <option value="10" selected>10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="enableNotifications" checked>
-                                <label class="form-check-label" for="enableNotifications">Enable Desktop Notifications</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="enableSounds" checked>
-                                <label class="form-check-label" for="enableSounds">Enable Sound Effects</label>
-                            </div>
+                    <div class="mb-3">
+                        <label for="settingValue" class="form-label">Setting Value</label>
+                        <input type="text" class="form-control" id="settingValue" name="setting_value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="settingType" class="form-label">Setting Type</label>
+                        <select class="form-select" id="settingType" name="setting_type" required>
+                            <option value="text">Text</option>
+                            <option value="number">Number</option>
+                            <option value="boolean">Boolean</option>
+                            <option value="json">JSON</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="settingGroup" class="form-label">Setting Group</label>
+                        <select class="form-select" id="settingGroup" name="setting_group" required>
+                            <option value="general">General</option>
+                            <option value="system">System</option>
+                            <option value="application">Application</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="settingDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="settingDescription" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isPublic" name="is_public">
+                            <label class="form-check-label" for="isPublic">Public Setting</label>
                         </div>
                     </div>
                 </div>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bx bx-save me-2"></i>Save Setting
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-            <!-- Security Settings -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Security Settings</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">Session Timeout (minutes)</label>
-                            <input type="number" class="form-control" value="30" min="5" max="120">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password Policy</label>
-                            <select class="form-select">
-                                <option value="medium" selected>Medium (8+ chars, 1 uppercase, 1 number)</option>
-                                <option value="strong">Strong (12+ chars, 2 uppercase, 2 numbers, 1 special)</option>
-                                <option value="weak">Weak (6+ chars)</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="require2FA" checked>
-                                <label class="form-check-label" for="require2FA">Require Two-Factor Authentication</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="loginAlerts" checked>
-                                <label class="form-check-label" for="loginAlerts">Send Login Alerts</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<!-- View Setting Modal -->
+<div class="modal fade" id="viewSettingModal" tabindex="-1" aria-labelledby="viewSettingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewSettingModalLabel">Setting Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <div class="modal-body">
+                <div id="settingDetails"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-            <!-- Backup & Maintenance -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Backup & Maintenance</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">Auto Backup Frequency</label>
-                            <select class="form-select">
-                                <option value="daily" selected>Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="disabled">Disabled</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Backup Retention Period</label>
-                            <select class="form-select">
-                                <option value="7" selected>7 Days</option>
-                                <option value="30">30 Days</option>
-                                <option value="90">90 Days</option>
-                                <option value="365">1 Year</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="maintenanceMode">
-                                <label class="form-check-label" for="maintenanceMode">Enable Maintenance Mode</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Maintenance Message</label>
-                            <textarea class="form-control" rows="3" placeholder="System is currently under maintenance..."></textarea>
-                        </div>
-                    </div>
-                </div>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteSettingModal" tabindex="-1" aria-labelledby="deleteSettingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteSettingModalLabel">Delete Setting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this setting? This action cannot be undone.</p>
+                <div id="deleteSettingName" class="fw-bold"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="bx bx-trash me-2"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-            <!-- Save Button -->
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <button type="button" class="btn btn-primary me-2">Save Settings</button>
-                        <button type="button" class="btn btn-outline-secondary">Reset to Default</button>
+@push('scripts')
+<script>
+let currentDeleteId = null;
+
+function addSetting() {
+    document.getElementById('settingModalLabel').textContent = 'Add Setting';
+    document.getElementById('settingForm').reset();
+    document.getElementById('settingId').value = '';
+    document.getElementById('settingMethod').value = 'POST';
+    document.getElementById('settingForm').action = '{{ route("system-settings.general.store") }}';
+    
+    const modal = new bootstrap.Modal(document.getElementById('settingModal'));
+    modal.show();
+}
+
+function editSetting(id) {
+    document.getElementById('settingModalLabel').textContent = 'Edit Setting';
+    document.getElementById('settingId').value = id;
+    document.getElementById('settingMethod').value = 'PUT';
+    document.getElementById('settingForm').action = `{{ route("system-settings.general.update") }}/${id}`;
+    
+    // Fetch setting data
+    fetch(`/api/general-settings/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('settingKey').value = data.setting_key;
+            document.getElementById('settingValue').value = data.setting_value;
+            document.getElementById('settingType').value = data.setting_type;
+            document.getElementById('settingGroup').value = data.setting_group;
+            document.getElementById('settingDescription').value = data.description || '';
+            document.getElementById('isPublic').checked = data.is_public;
+            
+            const modal = new bootstrap.Modal(document.getElementById('settingModal'));
+            modal.show();
+        });
+}
+
+function viewSetting(id) {
+    fetch(`/api/general-settings/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            const details = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Setting Key:</strong><br>
+                        <code>${data.setting_key}</code>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Setting Value:</strong><br>
+                        ${data.setting_value}
                     </div>
                 </div>
-            </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <strong>Type:</strong> ${data.setting_type}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Group:</strong> ${data.setting_group}
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <strong>Description:</strong><br>
+                        ${data.description || 'N/A'}
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <strong>Public:</strong> ${data.is_public ? 'Yes' : 'No'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Created:</strong> ${new Date(data.created_at).toLocaleString()}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('settingDetails').innerHTML = details;
+            const modal = new bootstrap.Modal(document.getElementById('viewSettingModal'));
+            modal.show();
+        });
+}
+
+function deleteSetting(id) {
+    currentDeleteId = id;
+    fetch(`/api/general-settings/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('deleteSettingName').textContent = data.setting_key;
+            const modal = new bootstrap.Modal(document.getElementById('deleteSettingModal'));
+            modal.show();
+        });
+}
+
+function confirmDelete() {
+    if (currentDeleteId) {
+        fetch(`/api/general-settings/${currentDeleteId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error deleting setting: ' + data.message);
+            }
+        });
+    }
+}
+
+function refreshSettings() {
+    location.reload();
+}
+</script>
+@endpush
         </div>
     </div>
 </div>

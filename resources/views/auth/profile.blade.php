@@ -4,6 +4,20 @@
 @section('description', 'FeedTan Pay - Manage your profile information')
 
 @section('content')
+@if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+@if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
 <div class="row">
     <div class="col-md-4">
         <!-- Profile Card -->
@@ -16,13 +30,19 @@
                             <i class="bx bx-camera"></i>
                         </button>
                     </div>
-                    <h4 class="mb-1">John Doe</h4>
-                    <p class="text-muted">john.doe@example.com</p>
+                    <h4 class="mb-1">{{ $user->name }}</h4>
+                    <p class="text-muted">{{ $user->email }}</p>
                     <div class="d-flex justify-content-center gap-2 mb-4">
                         <span class="badge bg-success">Active</span>
-                        <span class="badge bg-primary">Premium</span>
+                        <span class="badge bg-{{ $user->role === 'admin' ? 'danger' : 'info' }}">{{ ucfirst($user->role) }}</span>
                     </div>
-                    <p class="text-muted">Digital enthusiast and tech lover. Passionate about creating amazing user experiences.</p>
+                    <p class="text-muted">
+                        @if($user->role === 'admin')
+                            System administrator with full access to FeedTan Pay features.
+                        @else
+                            Staff member managing payments and customer support.
+                        @endif
+                    </p>
                 </div>
                 
                 <div class="row text-center">
@@ -79,15 +99,23 @@
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label class="form-label text-muted">Full Name</label>
-                        <p class="mb-0">John Doe</p>
+                        <p class="mb-0">{{ $user->name }}</p>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label text-muted">Username</label>
-                        <p class="mb-0">@johndoe</p>
+                        <p class="mb-0">@{{ Str::slug($user->name) }}</p>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label text-muted">Email</label>
-                        <p class="mb-0">john.doe@example.com</p>
+                        <p class="mb-0">{{ $user->email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Role</label>
+                        <p class="mb-0">
+                            <span class="badge bg-{{ $user->role === 'admin' ? 'danger' : 'info' }}">
+                                {{ ucfirst($user->role) }}
+                            </span>
+                        </p>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label text-muted">Phone</label>
@@ -415,4 +443,66 @@ function exportSettings() {
     alert('Exporting your account settings...');
 }
 </script>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('profile.update') }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Full Name</label>
+                        <input type="text" class="form-control @error('name') is-invalid @enderror" id="editName" name="name" value="{{ old('name', $user->name) }}" required>
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email Address</label>
+                        <input type="email" class="form-control @error('email') is-invalid @enderror" id="editEmail" name="email" value="{{ old('email', $user->email) }}" required>
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPhone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control @error('phone') is-invalid @enderror" id="editPhone" name="phone" value="{{ old('phone') }}" placeholder="+1 (555) 123-4567">
+                        @error('phone')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="editBio" class="form-label">Bio</label>
+                        <textarea class="form-control @error('bio') is-invalid @enderror" id="editBio" name="bio" rows="3" placeholder="Tell us about yourself">{{ old('bio', $user->role === 'admin' ? 'System administrator with full access to FeedTan Pay features.' : 'Staff member managing payments and customer support.') }}</textarea>
+                        @error('bio')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bx bx-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endpush

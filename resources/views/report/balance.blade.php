@@ -311,30 +311,7 @@
             </div>
         </div>
 
-        <!-- Spending Analysis -->
-        <div class="card mb-6">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Spending Analysis</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="spendingChart" height="200"></canvas>
-                <div class="mt-4">
-                    <div class="d-flex justify-content-between mb-2">
-                        <small>Daily Average</small>
-                        <strong>$174.49</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <small>Weekly Average</small>
-                        <strong>$1,221.43</strong>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <small>Monthly Average</small>
-                        <strong>$5,234.75</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        
         <!-- Budget Status -->
         <div class="card">
             <div class="card-header">
@@ -396,121 +373,269 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script>
+// Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Balance Chart
-    const balanceCtx = document.getElementById('balanceChart').getContext('2d');
-    new Chart(balanceCtx, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            datasets: [{
-                label: 'Balance',
-                data: [8000, 8500, 9200, 8800, 9500, 10200, 11000, 10500, 11200, 11800, 11500, 12458],
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    // History Chart
-    const historyCtx = document.getElementById('historyChart').getContext('2d');
-    new Chart(historyCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-            datasets: [{
-                label: 'Income',
-                data: [2500, 3200, 2800, 3500],
-                backgroundColor: '#28a745'
-            }, {
-                label: 'Expenses',
-                data: [1800, 2100, 1900, 2300],
-                backgroundColor: '#dc3545'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    // Spending Chart
-    const spendingCtx = document.getElementById('spendingChart').getContext('2d');
-    new Chart(spendingCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Food', 'Transport', 'Entertainment', 'Shopping', 'Utilities', 'Other'],
-            datasets: [{
-                data: [845.50, 320, 320, 245.50, 425.75, 198],
-                backgroundColor: [
-                    '#28a745',
-                    '#17a2b8',
-                    '#ffc107',
-                    '#6c757d',
-                    '#fd7e14',
-                    '#e83e8c'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                }
-            }
-        }
-    });
+    // Initialize charts after a small delay to ensure DOM is ready
+    setTimeout(function() {
+        initializeCharts();
+    }, 100);
 });
 
+function initializeCharts() {
+    try {
+        // Balance Chart
+        const balanceCanvas = document.getElementById('balanceChart');
+        if (balanceCanvas) {
+            const balanceCtx = balanceCanvas.getContext('2d');
+            new Chart(balanceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Balance',
+                        data: [8000, 8500, 9200, 8800, 9500, 10200, 11000, 10500, 11200, 11800, 11500, 12458],
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#198754',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#198754',
+                            borderWidth: 1,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Balance: $' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000).toFixed(0) + 'k';
+                                },
+                                color: '#6c757d',
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6c757d',
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // History Chart
+        const historyCanvas = document.getElementById('historyChart');
+        if (historyCanvas) {
+            const historyCtx = historyCanvas.getContext('2d');
+            new Chart(historyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Income',
+                        data: [2500, 3200, 2800, 3500],
+                        backgroundColor: '#198754',
+                        borderColor: '#198754',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }, {
+                        label: 'Expenses',
+                        data: [1800, 2100, 1900, 2300],
+                        backgroundColor: '#dc3545',
+                        borderColor: '#dc3545',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#198754',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000).toFixed(1) + 'k';
+                                },
+                                color: '#6c757d',
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6c757d',
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Spending Chart
+        const spendingCanvas = document.getElementById('spendingChart');
+        if (spendingCanvas) {
+            const spendingCtx = spendingCanvas.getContext('2d');
+            new Chart(spendingCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Food', 'Transport', 'Entertainment', 'Shopping', 'Utilities', 'Other'],
+                    datasets: [{
+                        data: [845.50, 320, 320, 245.50, 425.75, 198],
+                        backgroundColor: [
+                            '#198754',
+                            '#0d6efd',
+                            '#ffc107',
+                            '#6c757d',
+                            '#fd7e14',
+                            '#e83e8c'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff',
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#198754',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = '$' + context.parsed.toLocaleString();
+                                    const percentage = Math.round((context.parsed / context.dataset.data.reduce((a, b) => a + b, 0)) * 100);
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        console.log('All charts initialized successfully');
+    } catch (error) {
+        console.error('Error initializing charts:', error);
+    }
+}
+
 function changePeriod(period) {
-    // Update button states
-    document.querySelectorAll('.btn-group .btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
-    
-    // In a real application, this would fetch new data based on the period
-    console.log('Changing period to:', period);
+    try {
+        // Update button states
+        document.querySelectorAll('.btn-group .btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // In a real application, this would fetch new data based on the period
+        console.log('Changing period to:', period);
+        
+        // Re-initialize charts with new data (placeholder for now)
+        initializeCharts();
+    } catch (error) {
+        console.error('Error changing period:', error);
+    }
 }
 </script>
 @endpush

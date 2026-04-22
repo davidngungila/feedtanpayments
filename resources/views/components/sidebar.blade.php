@@ -109,6 +109,236 @@
             </ul>
         </li>
 
+        <!-- Members -->
+        <li class="menu-item {{ request()->routeIs('members*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-group"></i>
+                <div class="text-truncate" data-i18n="Members">Members</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('members.all') ? 'active' : '' }}">
+                    <a href="{{ route('members.all') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="All Members">All Members</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('members.add') ? 'active' : '' }}">
+                    <a href="{{ route('members.add') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Add Member">Add Member</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('members.profiles') ? 'active' : '' }}">
+                    <a href="{{ route('members.profiles') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Member Profiles">Member Profiles</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('members.groups') ? 'active' : '' }}">
+                    <a href="{{ route('members.groups') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Member Groups">Member Groups</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('members.contributions') ? 'active' : '' }}">
+                    <a href="{{ route('members.contributions') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Contributions">Contributions</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('members.reports') ? 'active' : '' }}">
+                    <a href="{{ route('members.reports') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Member Reports">Member Reports</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Investment -->
+        <li class="menu-item {{ request()->routeIs('investment*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-trending-up"></i>
+                <div class="text-truncate" data-i18n="Investment">Investment</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('investment.view') ? 'active' : '' }}">
+                    <a href="{{ route('investment.view') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="View Investments">View Investments</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('investment.new') ? 'active' : '' }}">
+                    <a href="{{ route('investment.new') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="New Investment">New Investment</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('investment.plans') ? 'active' : '' }}">
+                    <a href="{{ route('investment.plans') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Investment Plans">Investment Plans</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('investment.returns') ? 'active' : '' }}">
+                    <a href="{{ route('investment.returns') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Returns / Profits">Returns / Profits</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('investment.history') ? 'active' : '' }}">
+                    <a href="{{ route('investment.history') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Investment History">Investment History</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('investment.reports') ? 'active' : '' }}">
+                    <a href="{{ route('investment.reports') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Reports">Reports</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Deposit / Savings -->
+        <li class="menu-item {{ request()->routeIs('savings*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-wallet"></i>
+                <div class="text-truncate" data-i18n="Deposit / Savings">Deposit / Savings</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('savings.deposit') ? 'active' : '' }}">
+                    <a href="{{ route('savings.deposit') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Make Deposit">Make Deposit</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('savings.accounts') ? 'active' : '' }}">
+                    <a href="{{ route('savings.accounts') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Savings Accounts">Savings Accounts</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('savings.history') ? 'active' : '' }}">
+                    <a href="{{ route('savings.history') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Transaction History">Transaction History</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('savings.withdrawal') ? 'active' : '' }}">
+                    <a href="{{ route('savings.withdrawal') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Withdrawal Requests">Withdrawal Requests</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('savings.reports') ? 'active' : '' }}">
+                    <a href="{{ route('savings.reports') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Savings Reports">Savings Reports</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Loans -->
+        <li class="menu-item {{ request()->routeIs('loans*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-dollar"></i>
+                <div class="text-truncate" data-i18n="Loans">Loans</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('loans.apply') ? 'active' : '' }}">
+                    <a href="{{ route('loans.apply') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Apply Loan">Apply Loan</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('loans.products') ? 'active' : '' }}">
+                    <a href="{{ route('loans.products') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Loan Products">Loan Products</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('loans.my') ? 'active' : '' }}">
+                    <a href="{{ route('loans.my') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="My Loans">My Loans</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('loans.repayments') ? 'active' : '' }}">
+                    <a href="{{ route('loans.repayments') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Repayments">Repayments</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('loans.schedule') ? 'active' : '' }}">
+                    <a href="{{ route('loans.schedule') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Loan Schedule">Loan Schedule</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('loans.reports') ? 'active' : '' }}">
+                    <a href="{{ route('loans.reports') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Loan Reports">Loan Reports</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Social Welfare Fund -->
+        <li class="menu-item {{ request()->routeIs('welfare*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-heart"></i>
+                <div class="text-truncate" data-i18n="Social Welfare Fund">Social Welfare Fund</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('welfare.contribute') ? 'active' : '' }}">
+                    <a href="{{ route('welfare.contribute') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Contribute">Contribute</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('welfare.balance') ? 'active' : '' }}">
+                    <a href="{{ route('welfare.balance') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Fund Balance">Fund Balance</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('welfare.support') ? 'active' : '' }}">
+                    <a href="{{ route('welfare.support') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Request Support">Request Support</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('welfare.history') ? 'active' : '' }}">
+                    <a href="{{ route('welfare.history') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Contributions History">Contributions History</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('welfare.reports') ? 'active' : '' }}">
+                    <a href="{{ route('welfare.reports') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Welfare Reports">Welfare Reports</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Shares -->
+        <li class="menu-item {{ request()->routeIs('shares*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-pie-chart"></i>
+                <div class="text-truncate" data-i18n="Shares">Shares</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('shares.buy') ? 'active' : '' }}">
+                    <a href="{{ route('shares.buy') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Buy Shares">Buy Shares</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('shares.my') ? 'active' : '' }}">
+                    <a href="{{ route('shares.my') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="My Shares">My Shares</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('shares.value') ? 'active' : '' }}">
+                    <a href="{{ route('shares.value') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Share Value">Share Value</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('shares.dividends') ? 'active' : '' }}">
+                    <a href="{{ route('shares.dividends') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Dividends">Dividends</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('shares.transfers') ? 'active' : '' }}">
+                    <a href="{{ route('shares.transfers') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Share Transfers">Share Transfers</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('shares.reports') ? 'active' : '' }}">
+                    <a href="{{ route('shares.reports') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Share Reports">Share Reports</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
             <!-- Account Settings -->
       
         <li class="menu-item {{ request()->routeIs('account-settings*') ? 'active open' : '' }}">

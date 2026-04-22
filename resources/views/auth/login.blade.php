@@ -79,26 +79,44 @@
                                         </svg>
                                     </span>
                                 </span>
-                                <span class="app-brand-text demo text-heading fw-bold">Sneat</span>
+                                <span class="app-brand-text demo text-heading fw-bold">FeedTan Pay</span>
                             </a>
                         </div>
                         <!-- /Logo -->
                         
-                        <h4 class="mb-1">Welcome to Sneat! <span class="text-primary">Login</span>!  </h4>
-                        <p class="mb-6">Please sign-in to your account and start the adventure</p>
+                        <h4 class="mb-1">Welcome to FeedTan Pay! <span class="text-primary">Login</span>!  </h4>
+                        <p class="mb-6">Please sign-in to your account and start managing payments</p>
 
-                        <form id="formAuthentication" class="mb-6" action="{{ route('dashboard') }}" method="POST">
+                        @if (session('error'))
+                            <div class="alert alert-danger">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+
+                        @if (session('success'))
+                            <div class="alert alert-success">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+
+                        <form id="formAuthentication" class="mb-6" action="{{ route('login') }}" method="POST">
                             @csrf
                             <div class="mb-6">
                                 <label for="email" class="form-label">Email or Username</label>
                                 <input
-                                    type="text"
-                                    class="form-control"
+                                    type="email"
+                                    class="form-control @error('email') is-invalid @enderror"
                                     id="email"
                                     name="email"
-                                    placeholder="Enter your email or username"
+                                    placeholder="Enter your email"
+                                    value="{{ old('email') }}"
                                     autofocus
                                     required />
+                                @error('email')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
                             </div>
                             <div class="mb-6 form-password-toggle">
                                 <label class="form-label" for="password">Password</label>
@@ -106,7 +124,7 @@
                                     <input
                                         type="password"
                                         id="password"
-                                        class="form-control"
+                                        class="form-control @error('password') is-invalid @enderror"
                                         name="password"
                                         placeholder="············"
                                         aria-describedby="password"
@@ -114,6 +132,11 @@
                                     <span class="input-group-text cursor-pointer" onclick="togglePassword()">
                                         <i class="icon-base bx bx-hide" id="passwordToggle"></i>
                                     </span>
+                                    @error('password')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="mb-8">
