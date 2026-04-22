@@ -112,7 +112,23 @@ Route::prefix('system-settings')->name('system-settings.')->middleware(['admin']
     Route::get('/notification', [DashboardController::class, 'systemNotification'])->name('notification');
     Route::get('/user', [DashboardController::class, 'systemUser'])->name('user');
     Route::get('/integration', [DashboardController::class, 'systemIntegration'])->name('integration');
+    Route::get('/integration/create', [DashboardController::class, 'createIntegration'])->name('integration.create');
+    Route::get('/integration/edit/{id}', [DashboardController::class, 'editIntegration'])->name('integration.edit');
     Route::get('/maintenance', [DashboardController::class, 'systemMaintenance'])->name('maintenance');
+    Route::get('/health', [DashboardController::class, 'systemHealth'])->name('health');
+    Route::get('/audit', [DashboardController::class, 'systemAudit'])->name('audit');
+    
+    // Security Center Routes
+    Route::prefix('security')->name('security.')->group(function () {
+        Route::get('/authentication', [DashboardController::class, 'securityAuthentication'])->name('authentication');
+        Route::get('/fraud', [DashboardController::class, 'securityFraud'])->name('fraud');
+        Route::get('/access', [DashboardController::class, 'securityAccess'])->name('access');
+        Route::get('/device', [DashboardController::class, 'securityDevice'])->name('device');
+        Route::get('/session', [DashboardController::class, 'securitySession'])->name('session');
+        Route::get('/protection', [DashboardController::class, 'securityProtection'])->name('protection');
+        Route::get('/alerts', [DashboardController::class, 'securityAlerts'])->name('alerts');
+        Route::get('/tracking', [DashboardController::class, 'securityTracking'])->name('tracking');
+    });
     
     // Admin user management
     Route::get('/create-admin', [AuthController::class, 'showCreateAdminForm'])->name('create-admin');

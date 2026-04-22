@@ -240,7 +240,7 @@ function editSetting(id) {
     document.getElementById('settingModalLabel').textContent = 'Edit Payment Setting';
     document.getElementById('settingId').value = id;
     document.getElementById('settingMethod').value = 'PUT';
-    document.getElementById('settingForm').action = `{{ route("system-settings.payment.update") }}/${id}`;
+    document.getElementById('settingForm').action = `/system-settings/payment/${id}`;
     
     // Fetch setting data
     fetch(`/api/payment-settings/${id}`)

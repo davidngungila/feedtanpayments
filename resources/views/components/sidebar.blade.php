@@ -410,6 +410,63 @@
                         <div class="text-truncate" data-i18n="System Maintenance">System Maintenance</div>
                     </a>
                 </li>
+                <li class="menu-item {{ request()->routeIs('system-settings.health') ? 'active' : '' }}">
+                    <a href="{{ route('system-settings.health') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="System Health">System Health</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('system-settings.audit') ? 'active' : '' }}">
+                    <a href="{{ route('system-settings.audit') }}" class="menu-link">
+                        <div class="text-truncate" data-i18n="Audit Trail">Audit Trail</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('system-settings.security*') ? 'active open' : '' }}">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <div class="text-truncate" data-i18n="Security Center">Security Center</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class="menu-item {{ request()->routeIs('system-settings.security.authentication') ? 'active' : '' }}">
+                            <a href="{{ route('system-settings.security.authentication') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Advanced Authentication">Advanced Authentication</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('system-settings.security.fraud') ? 'active' : '' }}">
+                            <a href="{{ route('system-settings.security.fraud') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Fraud Detection">Fraud Detection</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('system-settings.security.access') ? 'active' : '' }}">
+                            <a href="{{ route('system-settings.security.access') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Access Control">Access Control</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('system-settings.security.device') ? 'active' : '' }}">
+                            <a href="{{ route('system-settings.security.device') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="IP & Device Security">IP & Device Security</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('system-settings.security.session') ? 'active' : '' }}">
+                            <a href="{{ route('system-settings.security.session') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Session Security">Session Security</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('system-settings.security.protection') ? 'active' : '' }}">
+                            <a href="{{ route('system-settings.security.protection') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="System Protection">System Protection</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('system-settings.security.alerts') ? 'active' : '' }}">
+                            <a href="{{ route('system-settings.security.alerts') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Security Alerts">Security Alerts</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('system-settings.security.tracking') ? 'active' : '' }}">
+                            <a href="{{ route('system-settings.security.tracking') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Activity Tracking">Activity Tracking</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </li>
 

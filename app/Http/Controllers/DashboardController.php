@@ -293,6 +293,79 @@ class DashboardController extends Controller
         return view('system-settings.maintenance');
     }
 
+    /**
+     * Show the system health page.
+     */
+    public function systemHealth()
+    {
+        return view('system-settings.health');
+    }
+
+    /**
+     * Show the create integration page.
+     */
+    public function createIntegration()
+    {
+        return view('system-settings.integration-create');
+    }
+
+    /**
+     * Show the edit integration page.
+     */
+    public function editIntegration($id)
+    {
+        return view('system-settings.integration-edit', ['id' => $id]);
+    }
+
+    /**
+     * Show the audit trail page.
+     */
+    public function systemAudit()
+    {
+        return view('system-settings.audit');
+    }
+
+    // Security Center Methods
+    public function securityAuthentication()
+    {
+        return view('system-settings.security.authentication');
+    }
+
+    public function securityFraud()
+    {
+        return view('system-settings.security.fraud');
+    }
+
+    public function securityAccess()
+    {
+        return view('system-settings.security.access');
+    }
+
+    public function securityDevice()
+    {
+        return view('system-settings.security.device');
+    }
+
+    public function securitySession()
+    {
+        return view('system-settings.security.session');
+    }
+
+    public function securityProtection()
+    {
+        return view('system-settings.security.protection');
+    }
+
+    public function securityAlerts()
+    {
+        return view('system-settings.security.alerts');
+    }
+
+    public function securityTracking()
+    {
+        return view('system-settings.security.tracking');
+    }
+
     // Members Methods
     public function membersAll()
     {
