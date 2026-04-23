@@ -76,15 +76,18 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="email_template_id" class="form-label">Template (Optional)</label>
+                                    <label for="email_template_id" class="form-label">Email Template</label>
                                     <select class="form-select" id="email_template_id">
                                         <option value="">Select Template</option>
                                         @foreach($templates as $template)
-                                            <option value="{{ $template->id }}" data-subject="{{ $template->subject }}" data-content="{{ $template->content }}">
-                                                {{ $template->name }}
+                                            <option value="{{ $template->id }}" data-category="{{ $template->category }}" data-subject="{{ $template->subject }}">
+                                                {{ $template->name }} ({{ $template->category }})
                                             </option>
                                         @endforeach
                                     </select>
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="previewEmailTemplate()">
+                                        <i class="bx bx-eye me-1"></i>Preview Template
+                                    </button>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="email_cc" class="form-label">CC (Optional)</label>
@@ -385,13 +388,125 @@
 <script>
 // Template selection
 document.getElementById('email_template_id').addEventListener('change', function() {
-    const option = this.options[this.selectedIndex];
-    if (option.value) {
-        document.getElementById('email_subject').value = option.dataset.subject;
-        document.getElementById('email_message').value = option.dataset.content;
-        updateCharCountEmail();
+    const selectedOption = this.options[this.selectedIndex];
+    if (selectedOption.value) {
+        // Load template details
+        fetch(`/api/email-template/${selectedOption.value}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('email_subject').value = data.data.subject || '';
+                    document.getElementById('email_message').value = data.data.html_content || '';
+                    updateCharCount();
+                    showNotification('Template loaded successfully', 'success');
+                }
+            })
+            .catch(error => {
+                showNotification('Error loading template', 'error');
+            });
+    } else {
+        document.getElementById('email_subject').value = '';
+        document.getElementById('email_message').value = '';
+        updateCharCount();
     }
 });
+
+// Preview email template
+function previewEmailTemplate() {
+    const templateId = document.getElementById('email_template_id').value;
+    
+    if (!templateId) {
+        showNotification('Please select a template first', 'warning');
+        return;
+    }
+
+    // Get current form values for variables
+    const variables = {
+        memberName: document.getElementById('email_to_name').value || 'John Doe',
+        currentDate: new Date().toISOString().split('T')[0],
+        companyName: 'FeedTan Community Microfinance Group',
+        loanAmount: '500,000',
+        loanNumber: 'LN2026001',
+        approvalDate: new Date().toISOString().split('T')[0],
+        interestRate: '15',
+        repaymentPeriod: '12',
+        monthlyPayment: '45,000',
+        firstPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        lastPaymentDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        acceptLink: '#',
+        detailsLink: '#',
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        daysRemaining: '7',
+        paymentAmount: '45,000',
+        paymentType: 'Monthly',
+        outstandingBalance: '450,000',
+        bankAccountNumber: '0123456789012',
+        mobileNumber: '+255712345678',
+        lateFee: '5,000',
+        lateFeeDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        paymentLink: '#',
+        supportNumber: '+255712345678',
+        statementDate: new Date().toISOString().split('T')[0],
+        currentBalance: '100,000',
+        monthlyChange: '10,000',
+        totalSavings: '100,000',
+        accountNumber: 'SA001',
+        accountType: 'Savings Account',
+        monthlySavings: '10,000',
+        interestEarned: '500',
+        recentTransactions: '<div class="transaction-item"><span>Deposit</span><span>TZS 10,000</span></div>',
+        portalLink: '#',
+        meetingType: 'General Meeting',
+        meetingDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        meetingTime: '10:00 AM',
+        duration: '2 hours',
+        organizer: 'Board of Directors',
+        expectedAttendees: '50',
+        buildingName: 'FeedTan CMG Office',
+        roomNumber: 'Conference Room A',
+        address: 'P.O.Box 7744, Ushirika Sokoine Road, Moshi, Kilimanjaro, Tanzania',
+        additionalDirections: 'Near Moshi Municipality offices',
+        agendaItems: '<li>Opening remarks</li><li>Financial report</li><li>New business</li><li>Closing remarks</li>',
+        rsvpLink: '#',
+        calendarLink: '#',
+        rsvpDeadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    };
+
+    // Show loading
+    showNotification('Loading template preview...', 'info');
+
+    // Fetch template preview
+    fetch('/api/email-template/preview', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            template_id: templateId,
+            variables: variables
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showEmailPreview(data.data.html);
+            showNotification('Template preview loaded', 'success');
+        } else {
+            showNotification('Error loading template preview', 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Error loading template preview', 'error');
+    });
+}
+
+// Show email preview in iframe
+function showEmailPreview(htmlContent) {
+    const previewFrame = document.getElementById('emailPreviewFrame');
+    previewFrame.srcdoc = htmlContent;
+    new bootstrap.Modal(document.getElementById('emailPreviewModal')).show();
+}
 
 // Character counter
 document.getElementById('email_message').addEventListener('input', updateCharCountEmail);
@@ -421,47 +536,61 @@ document.getElementById('emailForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const formData = {
-        service_id: document.getElementById('email_service_id').value,
-        to_email: document.getElementById('email_to').value,
-        to_name: document.getElementById('email_to_name').value || null,
-        from_name: document.getElementById('email_from_name').value,
-        subject: document.getElementById('email_subject').value,
-        body_html: document.getElementById('email_message').value,
-        body_text: document.getElementById('email_message').value.replace(/<[^>]*>/g, ''),
-        template_id: document.getElementById('email_template_id').value || null,
-        cc: document.getElementById('email_cc').value || null,
-        bcc: document.getElementById('email_bcc').value || null,
-        reply_to: document.getElementById('email_reply_to').value || null,
-        is_test: document.getElementById('email_test_mode').checked,
-        schedule_time: document.getElementById('email_schedule_later').checked ? document.getElementById('email_schedule_time').value : null
+
+function sendEmail() {
+    const formData = new FormData(document.getElementById('emailForm'));
+    
+    // Prepare variables for template processing
+    const variables = {
+        memberName: formData.get('to_name') || 'Valued Member',
+        currentDate: new Date().toISOString().split('T')[0],
+        companyName: 'FeedTan Community Microfinance Group'
     };
     
-    sendEmail(formData);
-});
+    const data = {
+        service_id: formData.get('service_id'),
+        to: formData.get('to'),
+        subject: formData.get('subject'),
+        message: formData.get('message'),
+        cc: formData.get('cc'),
+        bcc: formData.get('bcc'),
+        reply_to: formData.get('reply_to'),
+        template_id: formData.get('template_id'),
+        variables: variables,
+        is_test: document.getElementById('email_test_mode').checked
+    };
 
-function sendEmail(formData) {
-    showNotification('Sending Email...', 'info');
-    
-    fetch('{{ route("messaging.email.send") }}', {
+    // Show loading
+    const submitBtn = document.querySelector('#emailForm button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Sending...';
+    submitBtn.disabled = true;
+
+    fetch('/messaging/email/send', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(data)
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             showNotification('Email sent successfully!', 'success');
-            clearEmailForm();
-            setTimeout(() => location.reload(), 1500);
+            document.getElementById('emailForm').reset();
+            updateCharCountEmail();
+            refreshEmailMessages();
         } else {
-            showNotification('Failed to send Email: ' + data.message, 'error');
+            showNotification('Failed to send email: ' + data.message, 'error');
         }
     })
     .catch(error => {
-        showNotification('Error sending Email: ' + error.message, 'error');
+        showNotification('Error sending email: ' + error.message, 'error');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
     });
 }
 
@@ -506,42 +635,42 @@ function viewEmailMessage(messageId) {
                                 ${data.isBounced() ? '<span class="badge bg-danger ms-1">Bounced</span>' : ''}
                             </div>
                         </div>
-                        @if(data.cc)
+                        ${data.cc && data.cc.length > 0 ? `
                         <div class="mb-3">
                             <label class="form-label">CC</label>
                             <div>${data.cc.join(', ')}</div>
                         </div>
-                        @endif
-                        @if(data.bcc)
+                        ` : ''}
+                        ${data.bcc && data.bcc.length > 0 ? `
                         <div class="mb-3">
                             <label class="form-label">BCC</label>
                             <div>${data.bcc.join(', ')}</div>
                         </div>
-                        @endif
+                        ` : ''}
                         <div class="mb-3">
                             <label class="form-label">Created</label>
                             <div>${new Date(data.created_at).toLocaleString()}</div>
                         </div>
-                        @if(data.sent_at)
+                        ${data.sent_at ? `
                         <div class="mb-3">
                             <label class="form-label">Sent</label>
                             <div>${new Date(data.sent_at).toLocaleString()}</div>
                         </div>
-                        @endif
-                        @if(data.opened_at)
+                        ` : ''}
+                        ${data.opened_at ? `
                         <div class="mb-3">
                             <label class="form-label">Opened</label>
                             <div>${new Date(data.opened_at).toLocaleString()}</div>
                         </div>
-                        @endif
+                        ` : ''}
                     </div>
                 </div>
-                @if(data.error_message)
+                ${data.error_message ? `
                 <div class="mb-3">
                     <label class="form-label">Error Message</label>
                     <div class="text-danger">${data.error_message}</div>
                 </div>
-                @endif
+                ` : ''}
                 <div class="mb-3">
                     <button type="button" class="btn btn-outline-primary" onclick="viewEmailContent(${messageId})">
                         <i class="bx bx-file me-2"></i>View Full Content

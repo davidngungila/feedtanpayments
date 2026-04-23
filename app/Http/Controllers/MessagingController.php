@@ -21,16 +21,8 @@ class MessagingController extends Controller
     {
         $smsServices = MessagingService::active()->byType('SMS')->get();
         $emailServices = MessagingService::active()->byType('EMAIL')->get();
-        
-        $recentSms = SmsMessage::with('messagingService')
-                              ->orderBy('created_at', 'desc')
-                              ->limit(5)
-                              ->get();
-                              
-        $recentEmails = EmailMessage::with('messagingService')
-                                 ->orderBy('created_at', 'desc')
-                                 ->limit(5)
-                                 ->get();
+        $recentSms = SmsMessage::with('messagingService')->orderBy('created_at', 'desc')->limit(5)->get();
+        $recentEmails = EmailMessage::with('messagingService')->orderBy('created_at', 'desc')->limit(5)->get();
 
         $stats = [
             'total_sms' => SmsMessage::count(),
@@ -42,13 +34,7 @@ class MessagingController extends Controller
             'failed_emails' => EmailMessage::failed()->count(),
         ];
 
-        return view('messaging.dashboard', compact(
-            'smsServices', 
-            'emailServices', 
-            'recentSms', 
-            'recentEmails',
-            'stats'
-        ));
+        return view('messaging.dashboard', compact('smsServices', 'emailServices', 'recentSms', 'recentEmails', 'stats'));
     }
 
     /**
@@ -56,13 +42,30 @@ class MessagingController extends Controller
      */
     public function smsIndex()
     {
-        $services = MessagingService::active()->byType('SMS')->get();
-        $templates = MessagingTemplate::active()->forSms()->get();
-        $messages = SmsMessage::with('messagingService', 'user')
-                             ->orderBy('created_at', 'desc')
-                             ->paginate(20);
+        try {
+            $services = MessagingService::active()->byType('SMS')->get();
+            $templates = MessagingTemplate::active()->forSms()->get();
+            $messages = SmsMessage::with('messagingService', 'user')
+                                 ->orderBy('created_at', 'desc')
+                                 ->paginate(20);
 
-        return view('messaging.sms.index', compact('services', 'templates', 'messages'));
+            return view('messaging.sms.index', compact('services', 'templates', 'messages'));
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Controller method failed',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+        }
+    }
+
+    /**
+     * Display SMS logs page.
+     */
+    public function smsLogsPage()
+    {
+        return view('messaging.sms.logs');
     }
 
     /**
@@ -83,17 +86,16 @@ class MessagingController extends Controller
         if (!$service->isReady()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Messaging service is not properly configured'
+                'message' => 'Selected messaging service is not properly configured'
             ], 400);
         }
 
         // Process template if provided
-        $messageText = $request->message;
+        $messageContent = $request->message;
         if ($request->template_id) {
-            $template = MessagingTemplate::find($request->template_id);
+            $template = MessagingTemplate::findOrFail($request->template_id);
             $processed = $template->process($request->variables ?? []);
-            $messageText = $processed['content'];
-            $template->incrementUsage();
+            $messageContent = $processed['content'];
         }
 
         // Create SMS message record
@@ -101,38 +103,38 @@ class MessagingController extends Controller
             'messaging_service_id' => $service->id,
             'user_id' => auth()->id(),
             'message_id' => 'SMS_' . Str::random(20),
-            'from' => $service->sender_id ?? 'FeedTanPay',
+            'from' => $service->sender_id,
             'to' => $this->formatPhoneNumber($request->to),
-            'message' => $messageText,
+            'message' => $messageContent,
             'message_type' => 'TEXT',
-            'sms_count' => $this->calculateSmsCount($messageText),
+            'sms_count' => $this->calculateSmsCount($messageContent),
             'price' => $service->cost_per_message,
             'currency' => $service->currency,
             'is_test' => $request->boolean('is_test', false),
         ]);
 
-        // Send via API
+        // Send SMS via API
         $response = $this->sendSmsViaApi($service, $smsMessage);
 
         if ($response['success']) {
             $smsMessage->update([
-                'status_group_id' => $response['status']['groupId'] ?? 18,
-                'status_group_name' => $response['status']['groupName'] ?? 'PENDING',
-                'status_id' => $response['status']['id'] ?? 51,
-                'status_name' => $response['status']['name'] ?? 'ENROUTE (SENT)',
-                'status_description' => $response['status']['description'] ?? 'Message sent to next instance',
+                'status_group_name' => 'PENDING',
+                'status_id' => $response['status_id'] ?? null,
+                'status_name' => $response['status_name'] ?? 'PENDING',
+                'status_description' => $response['status_description'] ?? 'Message sent successfully',
                 'sent_at' => now(),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'SMS sent successfully',
-                'data' => $smsMessage
+                'message_id' => $smsMessage->message_id,
+                'status' => $response['status']
             ]);
         } else {
             $smsMessage->update([
                 'status_group_name' => 'FAILED',
-                'status_name' => 'FAILED_API_ERROR',
+                'status_name' => 'FAILED',
                 'status_description' => $response['error'],
                 'failed_at' => now(),
             ]);
@@ -150,7 +152,7 @@ class MessagingController extends Controller
     public function emailIndex()
     {
         $services = MessagingService::active()->byType('EMAIL')->get();
-        $templates = MessagingTemplate::active()->forEmail()->get();
+        $templates = \App\Models\EmailTemplate::active()->get();
         $messages = EmailMessage::with('messagingService', 'user')
                                ->orderBy('created_at', 'desc')
                                ->paginate(20);
@@ -165,12 +167,10 @@ class MessagingController extends Controller
     {
         $request->validate([
             'service_id' => 'required|exists:messaging_services,id',
-            'to_email' => 'required|email',
-            'to_name' => 'nullable|string|max:100',
+            'to' => 'required|email',
             'subject' => 'required|string|max:255',
-            'body_html' => 'required|string',
-            'body_text' => 'nullable|string',
-            'template_id' => 'nullable|exists:messaging_templates,id',
+            'message' => 'required|string',
+            'template_id' => 'nullable|exists:email_templates,id',
             'is_test' => 'boolean',
         ]);
 
@@ -179,20 +179,32 @@ class MessagingController extends Controller
         if (!$service->isReady()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Messaging service is not properly configured'
+                'message' => 'Selected messaging service is not properly configured'
             ], 400);
         }
 
         // Process template if provided
+        $htmlContent = $request->message;
+        $textContent = strip_tags($request->message);
         $subject = $request->subject;
-        $bodyHtml = $request->body_html;
-        $bodyText = $request->body_text;
-
+        
         if ($request->template_id) {
-            $template = MessagingTemplate::find($request->template_id);
-            $processed = $template->process($request->variables ?? []);
-            $subject = $processed['subject'] ?? $subject;
-            $bodyHtml = $processed['content'] ?? $bodyHtml;
+            $template = \App\Models\EmailTemplate::findOrFail($request->template_id);
+            
+            // Prepare template variables
+            $variables = $request->variables ?? [];
+            
+            // Add common variables
+            $variables['memberName'] = $variables['memberName'] ?? 'Valued Member';
+            $variables['currentDate'] = date('Y-m-d');
+            $variables['companyName'] = 'FeedTan Community Microfinance Group';
+            
+            $processed = $template->processTemplate($variables);
+            $htmlContent = $processed['html'];
+            $textContent = $processed['text'] ?? strip_tags($htmlContent);
+            $subject = $processed['subject'] ?: $subject;
+            
+            // Increment template usage
             $template->incrementUsage();
         }
 
@@ -201,38 +213,40 @@ class MessagingController extends Controller
             'messaging_service_id' => $service->id,
             'user_id' => auth()->id(),
             'message_id' => 'EMAIL_' . Str::random(20),
-            'from_name' => 'FeedTan Pay',
-            'from_email' => 'noreply@feedtanpay.co.tz',
-            'to_email' => $request->to_email,
-            'to_name' => $request->to_name,
+            'from_name' => $service->from_name ?? 'FeedTan Pay',
+            'from_email' => $service->from_email ?? 'feedtan15@gmail.com',
+            'to_email' => $request->to,
+            'to_name' => $variables['memberName'] ?? 'Valued Member',
             'subject' => $subject,
-            'body_html' => $bodyHtml,
-            'body_text' => $bodyText,
-            'is_test' => $request->boolean('is_test', false),
+            'body_html' => $htmlContent,
+            'body_text' => $textContent,
+            'status_name' => 'pending',
+            'custom_data' => json_encode([
+                'template_id' => $request->template_id,
+                'variables' => $variables,
+                'sent_via' => 'template_system'
+            ])
         ]);
 
-        // Send via API
+        // Send Email via API
         $response = $this->sendEmailViaApi($service, $emailMessage);
 
         if ($response['success']) {
             $emailMessage->update([
-                'status_group_id' => $response['status']['groupId'] ?? 18,
-                'status_group_name' => $response['status']['groupName'] ?? 'PENDING',
-                'status_id' => $response['status']['id'] ?? 51,
-                'status_name' => $response['status']['name'] ?? 'ENROUTE (SENT)',
-                'status_description' => $response['status']['description'] ?? 'Message sent to next instance',
+                'status_name' => $response['status_name'] ?? 'sent',
+                'status_description' => $response['status_description'] ?? 'Email sent successfully',
                 'sent_at' => now(),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Email sent successfully',
-                'data' => $emailMessage
+                'message_id' => $emailMessage->message_id,
+                'status' => $response['status']
             ]);
         } else {
             $emailMessage->update([
-                'status_group_name' => 'FAILED',
-                'status_name' => 'FAILED_API_ERROR',
+                'status_name' => 'failed',
                 'status_description' => $response['error'],
                 'failed_at' => now(),
             ]);
@@ -245,32 +259,651 @@ class MessagingController extends Controller
     }
 
     /**
-     * Send SMS via Messaging Service API V2.
+     * Preview email template.
      */
-    private function sendSmsViaApi(MessagingService $service, SmsMessage $smsMessage): array
+    public function previewEmailTemplate(Request $request)
+    {
+        $request->validate([
+            'template_id' => 'required|exists:email_templates,id',
+            'variables' => 'nullable|array'
+        ]);
+
+        $template = \App\Models\EmailTemplate::findOrFail($request->template_id);
+        
+        // Prepare variables with defaults
+        $variables = $request->variables ?? [];
+        $variables['memberName'] = $variables['memberName'] ?? 'John Doe';
+        $variables['currentDate'] = date('Y-m-d');
+        $variables['companyName'] = 'FeedTan Community Microfinance Group';
+        
+        $processed = $template->processTemplate($variables);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'subject' => $processed['subject'],
+                'html' => $processed['html'],
+                'text' => $processed['text'],
+                'template_name' => $template->name,
+                'template_category' => $template->category,
+                'variables' => json_decode($template->variables, true)
+            ]
+        ]);
+    }
+
+    /**
+     * Get email template details.
+     */
+    public function getEmailTemplate($id)
+    {
+        $template = \App\Models\EmailTemplate::findOrFail($id);
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $template->id,
+                'name' => $template->name,
+                'category' => $template->category,
+                'subject' => $template->subject,
+                'html_content' => $template->html_content,
+                'text_content' => $template->text_content,
+                'variables' => json_decode($template->variables, true),
+                'is_active' => $template->is_active,
+                'usage_count' => $template->usage_count,
+                'last_used_at' => $template->last_used_at
+            ]
+        ]);
+    }
+
+    /**
+     * Display services management page.
+     */
+    public function servicesIndex()
+    {
+        $services = MessagingService::with(['smsMessages', 'emailMessages'])
+                                   ->orderBy('created_at', 'desc')
+                                   ->paginate(20);
+
+        return view('messaging.services.index', compact('services'));
+    }
+
+    /**
+     * Get a specific messaging service.
+     */
+    public function getService($serviceId)
     {
         try {
-            $endpoint = $service->test_mode 
-                ? $service->getApiEndpoint('sms/test/text/single')
-                : $service->getApiEndpoint('sms/text/single');
+            $service = MessagingService::with(['smsMessages', 'emailMessages'])->findOrFail($serviceId);
+            
+            // Add message counts to the service data
+            $serviceData = $service->toArray();
+            $serviceData['sms_messages_count'] = $service->smsMessages()->count();
+            $serviceData['email_messages_count'] = $service->emailMessages()->count();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $serviceData
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get service: ' . $e->getMessage()
+            ], 404);
+        }
+    }
 
-            $payload = [
-                'from' => $smsMessage->from,
-                'to' => $smsMessage->to,
-                'text' => $smsMessage->message,
-            ];
+    /**
+     * Get SMS message details from external API.
+     */
+    public function getSmsMessage($messageId)
+    {
+        try {
+            // Get the SMS service
+            $smsService = \App\Models\MessagingService::where('type', 'SMS')->where('is_active', true)->first();
+            
+            if (!$smsService) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active SMS service found'
+                ], 404);
+            }
 
-            $response = Http::withHeaders($service->getApiHeaders())
-                            ->post($endpoint, $payload);
+            // Get local message for context
+            $localMessage = \App\Models\SmsMessage::find($messageId);
+            if (!$localMessage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Message not found'
+                ], 404);
+            }
+
+            // Get logs from external API
+            $url = $smsService->base_url . '/api/v2/logs?limit=100';
+            $response = Http::withHeaders($smsService->getApiHeaders())
+                           ->timeout(30)
+                           ->get($url);
 
             if ($response->successful()) {
                 $data = $response->json();
                 
+                if (isset($data['results']) && is_array($data['results'])) {
+                    // Try multiple matching strategies
+                    $matchedLog = null;
+                    
+                    // Strategy 1: Match by exact API message ID
+                    if ($localMessage->message_id) {
+                        foreach ($data['results'] as $log) {
+                            if ($log['messageId'] === $localMessage->message_id) {
+                                $matchedLog = $log;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Strategy 2: Match by recipient and message content
+                    if (!$matchedLog) {
+                        foreach ($data['results'] as $log) {
+                            if ($log['to'] === $localMessage->to && 
+                                isset($log['text']) && 
+                                trim($log['text']) === trim($localMessage->message)) {
+                                $matchedLog = $log;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Strategy 3: Match by recipient and close time (within 5 minutes)
+                    if (!$matchedLog) {
+                        $localTime = $localMessage->created_at->timestamp;
+                        foreach ($data['results'] as $log) {
+                            $logTime = strtotime($log['sentAt']);
+                            if ($log['to'] === $localMessage->to && 
+                                abs($logTime - $localTime) <= 300) { // 5 minutes
+                                $matchedLog = $log;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Strategy 4: Get the most recent message for the same recipient
+                    if (!$matchedLog) {
+                        foreach ($data['results'] as $log) {
+                            if ($log['to'] === $localMessage->to) {
+                                $matchedLog = $log;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if ($matchedLog) {
+                        // Create enhanced message data from external API
+                        $messageData = [
+                            'id' => $localMessage->id,
+                            'message_id' => $matchedLog['messageId'],
+                            'from' => $matchedLog['from'],
+                            'to' => $matchedLog['to'],
+                            'message' => $matchedLog['text'] ?? $localMessage->message,
+                            'status_name' => $matchedLog['status']['name'] ?? $localMessage->status_name,
+                            'status_group_name' => $matchedLog['status']['groupName'] ?? '',
+                            'channel' => $matchedLog['channel'] ?? '',
+                            'sent_at' => $matchedLog['sentAt'],
+                            'done_at' => $matchedLog['doneAt'],
+                            'sms_count' => $matchedLog['smsCount'] ?? $localMessage->sms_count,
+                            'reference' => $matchedLog['reference'] ?? '',
+                            'delivery' => $matchedLog['delivery'] ?? '',
+                            'messaging_service' => [
+                                'name' => $localMessage->messagingService->name
+                            ],
+                            'user' => [
+                                'name' => $localMessage->user->name
+                            ],
+                            'getFormattedRecipient' => $localMessage->getFormattedRecipient(),
+                            'getStatusBadgeColor' => $this->getStatusBadgeColorFromApi($matchedLog['status']['groupName'] ?? ''),
+                            'price' => $localMessage->price,
+                            'currency' => $localMessage->currency,
+                            'created_at' => $localMessage->created_at,
+                            'error_message' => $localMessage->error_message,
+                            'is_test' => $localMessage->is_test
+                        ];
+                        
+                        return response()->json([
+                            'success' => true,
+                            'data' => $messageData,
+                            'source' => 'external_api'
+                        ]);
+                    }
+                }
+            }
+            
+            // If external API fails or no match, return local data with enhanced info
+            $messageData = $localMessage->toArray();
+            $messageData['getFormattedRecipient'] = $localMessage->getFormattedRecipient();
+            $messageData['getStatusBadgeColor'] = $localMessage->getStatusBadgeColor();
+            $messageData['channel'] = 'Unknown';
+            $messageData['reference'] = '';
+            $messageData['delivery'] = '';
+            $messageData['status_group_name'] = '';
+            
+            return response()->json([
+                'success' => true,
+                'data' => $messageData,
+                'source' => 'local_database'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get SMS message: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Helper method to get status badge color from API status
+     */
+    private function getStatusBadgeColorFromApi($statusGroup)
+    {
+        switch (strtolower($statusGroup)) {
+            case 'delivered':
+                return 'success';
+            case 'sent':
+            case 'enroute':
+            case 'accepted':
+                return 'info';
+            case 'failed':
+            case 'rejected':
+                return 'danger';
+            case 'pending':
+                return 'warning';
+            default:
+                return 'secondary';
+        }
+    }
+
+    /**
+     * Export SMS message details.
+     */
+    public function exportSmsMessage($messageId)
+    {
+        try {
+            $message = \App\Models\SmsMessage::with(['messagingService', 'user'])->findOrFail($messageId);
+            
+            // Create CSV data
+            $csvData = [
+                ['Field', 'Value'],
+                ['Message ID', $message->message_id],
+                ['Recipient', $message->getFormattedRecipient()],
+                ['Sender ID', $message->from],
+                ['Message', $message->message],
+                ['Service', $message->messagingService->name],
+                ['Status', $message->status_name],
+                ['SMS Count', $message->sms_count],
+                ['Price', $message->currency . ' ' . number_format($message->price, 4)],
+                ['User', $message->user->name],
+                ['Is Test', $message->is_test ? 'Yes' : 'No'],
+                ['Created At', $message->created_at],
+                ['Sent At', $message->sent_at ?? 'N/A'],
+                ['Failed At', $message->failed_at ?? 'N/A'],
+                ['Error Message', $message->error_message ?? 'N/A'],
+                ['Notes', $message->notes ?? 'N/A']
+            ];
+            
+            // Generate CSV content
+            $csv = '';
+            foreach ($csvData as $row) {
+                $csv .= implode(',', array_map(function($field) {
+                    return '"' . str_replace('"', '""', $field) . '"';
+                }, $row)) . "\n";
+            }
+            
+            $filename = 'sms_message_' . $message->id . '_' . date('Y-m-d_H-i-s') . '.csv';
+            
+            return response($csv)
+                ->header('Content-Type', 'text/csv')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+                
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to export SMS message: ' . $e->getMessage()
+            ], 404);
+        }
+    }
+
+    /**
+     * Get SMS logs from local database.
+     */
+    public function getSmsLogs(Request $request)
+    {
+        try {
+            // Build query from local database
+            $query = \App\Models\SmsMessage::with(['messagingService', 'user']);
+            
+            // Apply filters
+            if ($request->has('from') && !empty($request->from)) {
+                $query->whereDate('created_at', '>=', $request->from);
+            }
+            
+            if ($request->has('to') && !empty($request->to)) {
+                $query->whereDate('created_at', '<=', $request->to);
+            }
+            
+            if ($request->has('sentSince') && !empty($request->sentSince)) {
+                $query->whereDate('sent_at', '>=', $request->sentSince);
+            }
+            
+            if ($request->has('sentUntil') && !empty($request->sentUntil)) {
+                $query->whereDate('sent_at', '<=', $request->sentUntil);
+            }
+            
+            if ($request->has('reference') && !empty($request->reference)) {
+                $query->where('reference', 'like', '%' . $request->reference . '%');
+            }
+            
+            if ($request->has('sender_id') && !empty($request->sender_id)) {
+                $query->where('from', $request->sender_id);
+            }
+            
+            if ($request->has('phone') && !empty($request->phone)) {
+                $query->where('to', 'like', '%' . $request->phone . '%');
+            }
+            
+            if ($request->has('status') && !empty($request->status)) {
+                $query->where('status_name', $request->status);
+            }
+            
+            // Apply limit and ordering
+            $limit = $request->has('limit') && !empty($request->limit) ? min($request->limit, 1000) : 100;
+            $query->orderBy('created_at', 'desc')->limit($limit);
+            
+            // Get the messages
+            $messages = $query->get();
+            
+            // Transform to match the expected API format
+            $results = $messages->map(function($message) {
+                // Parse custom_data for additional fields
+                $customData = [];
+                if ($message->custom_data) {
+                    try {
+                        $customData = json_decode($message->custom_data, true) ?: [];
+                    } catch (\Exception $e) {
+                        $customData = [];
+                    }
+                }
+                
+                return [
+                    'messageId' => $message->message_id,
+                    'reference' => $message->reference,
+                    'sentAt' => $message->sent_at ? $message->sent_at->format('Y-m-d H:i:s') : null,
+                    'doneAt' => $message->delivered_at ? $message->delivered_at->format('Y-m-d H:i:s') : null,
+                    'to' => $message->to,
+                    'channel' => $customData['channel'] ?? 'SMS',
+                    'from' => $message->from,
+                    'smsCount' => $message->sms_count,
+                    'status' => [
+                        'id' => $message->status_id,
+                        'name' => $message->status_name,
+                        'groupName' => $message->status_group_name,
+                        'description' => $message->status_description
+                    ],
+                    'delivery' => $customData['delivery'] ?? $message->status_name,
+                    'text' => $message->message,
+                    'price' => $message->price,
+                    'currency' => $message->currency,
+                    'user' => [
+                        'name' => $message->user->name ?? 'System'
+                    ],
+                    'service' => [
+                        'name' => $message->messagingService->name ?? 'Unknown'
+                    ],
+                    'created_at' => $message->created_at->format('Y-m-d H:i:s'),
+                    'local_id' => $message->id,
+                    'error_message' => $message->error_message,
+                    'is_test' => $message->is_test
+                ];
+            });
+            
+            // Return in the same format as the external API
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'results' => $results->toArray(),
+                    'total' => $results->count(),
+                    'source' => 'local_database'
+                ],
+                'message' => 'SMS logs retrieved from local database'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving SMS logs from database: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Export SMS logs to CSV from local database.
+     */
+    public function exportSmsLogs(Request $request)
+    {
+        try {
+            // Build query from local database
+            $query = \App\Models\SmsMessage::with(['messagingService', 'user']);
+            
+            // Apply filters (same as getSmsLogs)
+            if ($request->has('from') && !empty($request->from)) {
+                $query->whereDate('created_at', '>=', $request->from);
+            }
+            
+            if ($request->has('to') && !empty($request->to)) {
+                $query->whereDate('created_at', '<=', $request->to);
+            }
+            
+            if ($request->has('sentSince') && !empty($request->sentSince)) {
+                $query->whereDate('sent_at', '>=', $request->sentSince);
+            }
+            
+            if ($request->has('sentUntil') && !empty($request->sentUntil)) {
+                $query->whereDate('sent_at', '<=', $request->sentUntil);
+            }
+            
+            if ($request->has('reference') && !empty($request->reference)) {
+                $query->where('reference', 'like', '%' . $request->reference . '%');
+            }
+            
+            if ($request->has('sender_id') && !empty($request->sender_id)) {
+                $query->where('from', $request->sender_id);
+            }
+            
+            if ($request->has('phone') && !empty($request->phone)) {
+                $query->where('to', 'like', '%' . $request->phone . '%');
+            }
+            
+            if ($request->has('status') && !empty($request->status)) {
+                $query->where('status_name', $request->status);
+            }
+            
+            // Set higher limit for export
+            $limit = $request->has('limit') && !empty($request->limit) ? min($request->limit, 5000) : 5000;
+            $query->orderBy('created_at', 'desc')->limit($limit);
+            
+            // Get the messages
+            $messages = $query->get();
+            
+            if ($messages->count() === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No logs data found to export'
+                ], 404);
+            }
+            
+            // Create CSV data
+            $csvData = [['Message ID', 'From', 'To', 'Status', 'Status Group', 'Channel', 'Sent At', 'Done At', 'SMS Count', 'Reference', 'Delivery', 'Price', 'Currency', 'User', 'Service', 'Created At']];
+            
+            foreach ($messages as $message) {
+                // Parse custom_data for additional fields
+                $customData = [];
+                if ($message->custom_data) {
+                    try {
+                        $customData = json_decode($message->custom_data, true) ?: [];
+                    } catch (\Exception $e) {
+                        $customData = [];
+                    }
+                }
+                
+                $csvData[] = [
+                    $message->message_id ?? '',
+                    $message->from ?? '',
+                    $message->to ?? '',
+                    $message->status_name ?? '',
+                    $message->status_group_name ?? '',
+                    $customData['channel'] ?? 'SMS',
+                    $message->sent_at ? $message->sent_at->format('Y-m-d H:i:s') : '',
+                    $message->delivered_at ? $message->delivered_at->format('Y-m-d H:i:s') : '',
+                    $message->sms_count ?? 0,
+                    $message->reference ?? '',
+                    $customData['delivery'] ?? $message->status_name,
+                    $message->price ?? 0,
+                    $message->currency ?? 'TZS',
+                    $message->user->name ?? 'System',
+                    $message->messagingService->name ?? 'Unknown',
+                    $message->created_at->format('Y-m-d H:i:s')
+                ];
+            }
+            
+            // Generate CSV content
+            $csv = '';
+            foreach ($csvData as $row) {
+                $csv .= implode(',', array_map(function($field) {
+                    return '"' . str_replace('"', '""', $field) . '"';
+                }, $row)) . "\n";
+            }
+            
+            $filename = 'sms_logs_' . date('Y-m-d_H-i-s') . '.csv';
+            
+            return response($csv)
+                ->header('Content-Type', 'text/csv')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error exporting SMS logs from database: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get SMS balance from external API.
+     */
+    public function getSmsBalance()
+    {
+        try {
+            // Get the SMS service
+            $smsService = \App\Models\MessagingService::where('type', 'SMS')->where('is_active', true)->first();
+            
+            if (!$smsService) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active SMS service found'
+                ], 404);
+            }
+
+            // Check cache first to avoid rate limiting
+            $cacheKey = 'sms_balance_' . $smsService->id;
+            $cachedBalance = \Cache::get($cacheKey);
+            
+            if ($cachedBalance) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $cachedBalance,
+                    'message' => 'SMS balance retrieved from cache',
+                    'cached' => true
+                ]);
+            }
+
+            // Make the API request
+            $url = $smsService->base_url . '/api/v2/balance';
+            
+            $response = Http::withHeaders($smsService->getApiHeaders())
+                           ->timeout(15)
+                           ->get($url);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                // Cache the result for 5 minutes to avoid rate limiting
+                \Cache::put($cacheKey, $data, 300);
+                
+                return response()->json([
+                    'success' => true,
+                    'data' => $data,
+                    'message' => 'SMS balance retrieved successfully',
+                    'cached' => false
+                ]);
+            } else if ($response->status() === 429) {
+                // Rate limited - try to return cached data if available
+                $fallbackBalance = \Cache::get($cacheKey . '_fallback');
+                if ($fallbackBalance) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => $fallbackBalance,
+                        'message' => 'SMS balance retrieved from fallback cache (rate limited)',
+                        'cached' => true,
+                        'rate_limited' => true
+                    ]);
+                }
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'SMS balance service temporarily unavailable due to rate limiting',
+                    'rate_limited' => true,
+                    'retry_after' => 60
+                ], 429);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to retrieve SMS balance: ' . $response->status(),
+                    'response' => $response->body()
+                ], $response->status());
+            }
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving SMS balance: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Send SMS via API
+     */
+    private function sendSmsViaApi(MessagingService $service, SmsMessage $smsMessage): array
+    {
+        try {
+            // Use the correct API endpoints based on the documentation
+            $endpoint = $service->test_mode 
+                ? $service->base_url . '/api/sms/v2/test/text/single'
+                : $service->base_url . '/api/sms/v2/text/single';
+
+            $payload = [
+                'from' => $smsMessage->from,
+                'to' => $smsMessage->to,
+                'text' => $smsMessage->message
+            ];
+
+            $response = Http::withHeaders($service->getApiHeaders())
+                           ->post($endpoint, $payload);
+
+            if ($response->successful()) {
+                $data = $response->json();
                 if (isset($data['messages'][0])) {
                     return [
                         'success' => true,
                         'status' => $data['messages'][0]['status'] ?? [],
-                        'message_id' => $data['messages'][0]['messageId'] ?? null,
+                        'message_id' => $data['messages'][0]['messageId'] ?? null
                     ];
                 }
             }
@@ -279,7 +912,6 @@ class MessagingController extends Controller
                 'success' => false,
                 'error' => $response->body() ?: 'Unknown API error'
             ];
-
         } catch (\Exception $e) {
             Log::error('SMS API Error: ' . $e->getMessage());
             return [
@@ -290,51 +922,27 @@ class MessagingController extends Controller
     }
 
     /**
-     * Send Email via Messaging Service API V2.
+     * Send Email via API.
      */
     private function sendEmailViaApi(MessagingService $service, EmailMessage $emailMessage): array
     {
         try {
-            $endpoint = $service->test_mode 
-                ? $service->getApiEndpoint('email/test/text/single')
-                : $service->getApiEndpoint('email/text/single');
-
-            $payload = [
-                'from' => [
-                    'name' => $emailMessage->from_name,
-                    'email' => $emailMessage->from_email,
-                ],
-                'to' => [
-                    'email' => $emailMessage->to_email,
-                    'name' => $emailMessage->to_name,
-                ],
-                'subject' => $emailMessage->subject,
-                'html' => $emailMessage->body_html,
-                'text' => $emailMessage->body_text,
-            ];
-
-            $response = Http::withHeaders($service->getApiHeaders())
-                            ->post($endpoint, $payload);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                
-                if (isset($data['messages'][0])) {
-                    return [
-                        'success' => true,
-                        'status' => $data['messages'][0]['status'] ?? [],
-                        'message_id' => $data['messages'][0]['messageId'] ?? null,
-                    ];
-                }
-            }
-
+            // Use Laravel's built-in mail system instead of external API
+            \Illuminate\Support\Facades\Mail::html($emailMessage->body_html, function ($message) use ($emailMessage, $service) {
+                $message->to($emailMessage->to_email, $emailMessage->to_name ?? 'Valued Member')
+                        ->subject($emailMessage->subject)
+                        ->from($emailMessage->from_email ?? $service->from_email ?? 'feedtan15@gmail.com', $emailMessage->from_name ?? $service->from_name ?? 'FeedTan Pay');
+            });
+            
             return [
-                'success' => false,
-                'error' => $response->body() ?: 'Unknown API error'
+                'success' => true,
+                'status_name' => 'sent',
+                'status_description' => 'Email sent successfully via SMTP',
+                'message_id' => $emailMessage->message_id
             ];
-
+            
         } catch (\Exception $e) {
-            Log::error('Email API Error: ' . $e->getMessage());
+            Log::error('Email SMTP Error: ' . $e->getMessage());
             return [
                 'success' => false,
                 'error' => $e->getMessage()
@@ -343,16 +951,16 @@ class MessagingController extends Controller
     }
 
     /**
-     * Format phone number to international format.
+     * Format phone number for SMS.
      */
     private function formatPhoneNumber(string $phone): string
     {
         // Remove all non-numeric characters
         $phone = preg_replace('/[^0-9]/', '', $phone);
         
-        // Add Tanzania country code if missing
-        if (strlen($phone) === 9 && str_starts_with($phone, '7')) {
-            $phone = '255' . $phone;
+        // Add country code if missing (assuming Tanzania)
+        if (strlen($phone) === 9 && str_starts_with($phone, '0')) {
+            $phone = '255' . substr($phone, 1);
         } elseif (strlen($phone) === 10 && str_starts_with($phone, '0')) {
             $phone = '255' . substr($phone, 1);
         }
@@ -361,134 +969,335 @@ class MessagingController extends Controller
     }
 
     /**
+     * Test a messaging service connection.
+     */
+    public function testService($serviceId)
+    {
+        try {
+            $service = MessagingService::findOrFail($serviceId);
+            $testResult = $this->performConnectionTest($service);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Connection test completed',
+                'data' => $testResult
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Connection test failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Perform actual connection test for the service.
+     */
+    private function performConnectionTest(MessagingService $service): array
+    {
+        if ($service->type === 'SMS') {
+            return $this->testSmsService($service);
+        } elseif ($service->type === 'EMAIL') {
+            return $this->testEmailService($service);
+        }
+        
+        throw new \Exception('Unsupported service type: ' . $service->type);
+    }
+
+    /**
+     * Test SMS service connection.
+     */
+    private function testSmsService(MessagingService $service): array
+    {
+        // Test basic connectivity first
+        try {
+            $baseTest = Http::timeout(5)->get($service->base_url);
+            
+            if ($baseTest->status() === 200) {
+                // Base URL is accessible, test API authentication with correct endpoints
+                $testEndpoints = [
+                    $service->base_url . '/api/sms/v2/test/text/single', // Correct test endpoint
+                    $service->base_url . '/api/sms/v2/text/single'      // Correct production endpoint
+                ];
+                
+                $payload = [
+                    'from' => $service->sender_id,
+                    'to' => '0622239304', // Use the test number provided by user
+                    'text' => 'Test message from FeedTan Pay'
+                ];
+
+                foreach ($testEndpoints as $endpoint) {
+                    $response = Http::withHeaders($service->getApiHeaders())
+                                   ->timeout(10)
+                                   ->post($endpoint, $payload);
+
+                    if ($response->successful()) {
+                        return [
+                            'status' => 'success',
+                            'response' => $response->json(),
+                            'message' => 'SMS service connection successful',
+                            'endpoint' => $endpoint
+                        ];
+                    }
+                }
+                
+                return [
+                    'status' => 'partial',
+                    'response' => ['base_url_accessible' => true, 'tested_endpoints' => $testEndpoints],
+                    'message' => 'Base URL accessible but API endpoints not working. Check token and endpoint configuration.'
+                ];
+            } else {
+                return [
+                    'status' => 'failed',
+                    'response' => ['base_url_status' => $baseTest->status()],
+                    'message' => 'SMS service base URL not accessible: HTTP ' . $baseTest->status()
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'status' => 'failed',
+                'response' => ['error' => $e->getMessage()],
+                'message' => 'SMS service connection failed: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Test Email service connection.
+     */
+    private function testEmailService(MessagingService $service): array
+    {
+        if ($service->provider === 'gmail') {
+            return $this->testGmailService($service);
+        }
+        
+        $endpoint = $service->getApiEndpoint('email/test/send');
+        
+        $payload = [
+            'from' => $service->config['from_email'] ?? 'noreply@feedtanpay.co.tz',
+            'to' => 'test@feedtanpay.co.tz',
+            'subject' => 'Test Email from FeedTan Pay',
+            'html' => '<h1>Test Email</h1><p>This is a test email to verify the connection.</p>'
+        ];
+
+        $response = Http::withHeaders($service->getApiHeaders())
+                       ->timeout(10)
+                       ->post($endpoint, $payload);
+
+        if ($response->successful()) {
+            return [
+                'status' => 'success',
+                'response' => $response->json(),
+                'message' => 'Email service connection successful'
+            ];
+        }
+
+        return [
+            'status' => 'failed',
+            'response' => $response->body(),
+            'message' => 'Email service connection failed: ' . $response->status()
+        ];
+    }
+
+    /**
+     * Test Gmail SMTP connection.
+     */
+    private function testGmailService(MessagingService $service): array
+    {
+        try {
+            $config = $service->config;
+            
+            // Test basic connectivity by attempting socket connection
+            $timeout = 10;
+            $host = $config['smtp_host'] ?? 'smtp.gmail.com';
+            $port = $config['smtp_port'] ?? 587;
+            
+            $socket = @fsockopen($host, $port, $errno, $errstr, $timeout);
+            
+            if ($socket) {
+                fclose($socket);
+                
+                // Additional validation - check if credentials are present
+                if ($service->username && $service->password) {
+                    return [
+                        'status' => 'success',
+                        'response' => [
+                            'connection' => 'established',
+                            'host' => $host,
+                            'port' => $port,
+                            'username' => $service->username
+                        ],
+                        'message' => 'Gmail SMTP connection successful'
+                    ];
+                } else {
+                    return [
+                        'status' => 'failed',
+                        'response' => ['error' => 'Missing credentials'],
+                        'message' => 'Gmail SMTP test failed: Missing username or password'
+                    ];
+                }
+            } else {
+                return [
+                    'status' => 'failed',
+                    'response' => ['error' => $errstr, 'errno' => $errno],
+                    'message' => "Gmail SMTP connection failed: {$errstr} (Error {$errno})"
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'status' => 'failed',
+                'response' => ['error' => $e->getMessage()],
+                'message' => 'Gmail SMTP connection failed: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Store a new messaging service.
+     */
+    public function storeService(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'type' => 'required|in:SMS,EMAIL',
+                'provider' => 'required|string|max:255',
+                'base_url' => 'required|url',
+                'api_version' => 'required|string|max:10',
+                'api_key' => 'nullable|string',
+                'bearer_token' => 'nullable|string',
+                'username' => 'nullable|string',
+                'password' => 'nullable|string',
+                'sender_id' => 'required|string|max:255',
+                'config' => 'nullable|array',
+                'rate_limit_per_hour' => 'nullable|integer|min:1',
+                'cost_per_message' => 'nullable|numeric|min:0',
+                'currency' => 'required|string|max:3',
+                'webhook_url' => 'nullable|url',
+                'notes' => 'nullable|string',
+                'test_mode' => 'boolean',
+            ]);
+
+            $service = MessagingService::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Service created successfully',
+                'data' => $service
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create service: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update a messaging service.
+     */
+    public function updateService(Request $request, $serviceId)
+    {
+        try {
+            $service = MessagingService::findOrFail($serviceId);
+            
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'type' => 'required|in:SMS,EMAIL',
+                'provider' => 'required|string|max:255',
+                'base_url' => 'required|url',
+                'api_version' => 'required|string|max:10',
+                'api_key' => 'nullable|string',
+                'bearer_token' => 'nullable|string',
+                'username' => 'nullable|string',
+                'password' => 'nullable|string',
+                'sender_id' => 'required|string|max:255',
+                'config' => 'nullable|array',
+                'rate_limit_per_hour' => 'nullable|integer|min:1',
+                'cost_per_message' => 'nullable|numeric|min:0',
+                'currency' => 'required|string|max:3',
+                'webhook_url' => 'nullable|url',
+                'notes' => 'nullable|string',
+                'test_mode' => 'boolean',
+            ]);
+
+            $service->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Service updated successfully',
+                'data' => $service
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update service: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Toggle service status (activate/deactivate).
+     */
+    public function toggleServiceStatus($serviceId, $activate)
+    {
+        try {
+            $service = MessagingService::findOrFail($serviceId);
+            $service->is_active = $activate;
+            $service->save();
+
+            $status = $activate ? 'activated' : 'deactivated';
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Service {$status} successfully",
+                'data' => $service
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to toggle service status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a messaging service.
+     */
+    public function deleteService(MessagingService $service)
+    {
+        try {
+            // Check if service has messages
+            $smsCount = $service->smsMessages()->count();
+            $emailCount = $service->emailMessages()->count();
+            
+            if ($smsCount > 0 || $emailCount > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete service with existing messages. Found ' . $smsCount . ' SMS and ' . $emailCount . ' email messages.'
+                ], 400);
+            }
+            
+            $service->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Service deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete service: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Calculate SMS count based on message length.
      */
     private function calculateSmsCount(string $message): int
     {
         $length = strlen($message);
-        return ceil($length / 160); // Standard SMS length
-    }
-
-    /**
-     * Display messaging services management.
-     */
-    public function servicesIndex()
-    {
-        $services = MessagingService::withCount(['smsMessages', 'emailMessages'])
-                                   ->orderBy('type')
-                                   ->orderBy('name')
-                                   ->paginate(20);
-
-        return view('messaging.services.index', compact('services'));
-    }
-
-    /**
-     * Store new messaging service.
-     */
-    public function storeService(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'type' => 'required|in:SMS,EMAIL,WHATSAPP,MOBILE',
-            'provider' => 'required|string|max:100',
-            'base_url' => 'required|url',
-            'bearer_token' => 'required_without:username,password|string',
-            'username' => 'required_without:bearer_token|string',
-            'password' => 'required_without:bearer_token|string',
-            'sender_id' => 'nullable|string|max:100',
-            'rate_limit_per_hour' => 'integer|min:1',
-            'cost_per_message' => 'numeric|min:0',
-            'currency' => 'string|size:3',
-        ]);
-
-        $service = MessagingService::create($request->all());
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Messaging service created successfully',
-            'data' => $service
-        ]);
-    }
-
-    /**
-     * Update messaging service.
-     */
-    public function updateService(Request $request, MessagingService $service)
-    {
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'type' => 'required|in:SMS,EMAIL,WHATSAPP,MOBILE',
-            'provider' => 'required|string|max:100',
-            'base_url' => 'required|url',
-            'bearer_token' => 'nullable|string',
-            'username' => 'nullable|string',
-            'password' => 'nullable|string',
-            'sender_id' => 'nullable|string|max:100',
-            'rate_limit_per_hour' => 'integer|min:1',
-            'cost_per_message' => 'numeric|min:0',
-            'currency' => 'string|size:3',
-        ]);
-
-        $service->update($request->all());
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Messaging service updated successfully',
-            'data' => $service
-        ]);
-    }
-
-    /**
-     * Test messaging service connection.
-     */
-    public function testService(MessagingService $service)
-    {
-        if (!$service->isReady()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Service is not properly configured'
-            ], 400);
-        }
-
-        // Test with a simple message
-        if ($service->type === 'SMS') {
-            $testMessage = [
-                'from' => $service->sender_id ?? 'TEST',
-                'to' => '255700000000', // Test number
-                'text' => 'Test message from FeedTan Pay',
-            ];
-            
-            $endpoint = $service->getApiEndpoint('sms/test/text/single');
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email testing not implemented yet'
-            ], 400);
-        }
-
-        try {
-            $response = Http::withHeaders($service->getApiHeaders())
-                            ->post($endpoint, $testMessage);
-
-            if ($response->successful()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Service connection test successful',
-                    'response' => $response->json()
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Service connection failed',
-                    'error' => $response->body()
-                ], 400);
-            }
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Service connection error',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return ceil($length / 160);
     }
 }

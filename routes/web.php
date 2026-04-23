@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MessagingController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -110,6 +111,7 @@ Route::prefix('system-settings')->name('system-settings.')->middleware(['admin']
     Route::put('/payment/{id}', [DashboardController::class, 'updatePaymentSetting'])->name('payment.update');
     Route::delete('/payment/{id}', [DashboardController::class, 'deletePaymentSetting'])->name('payment.delete');
     Route::get('/security', [DashboardController::class, 'systemSecurity'])->name('security');
+    Route::get('/security-logs', [DashboardController::class, 'systemSecurityLogs'])->name('security-logs');
     Route::get('/notification', [DashboardController::class, 'systemNotification'])->name('notification');
     Route::get('/user', [DashboardController::class, 'systemUser'])->name('user');
     Route::get('/integration', [DashboardController::class, 'systemIntegration'])->name('integration');
@@ -147,9 +149,9 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
     Route::delete('/payment-settings/{id}', [DashboardController::class, 'deletePaymentSetting']);
 });
 
-// Test messaging controller
-Route::get('/test-messaging', function() {
-    return response()->json(['message' => 'Messaging routes working']);
+// Test route to verify Laravel routing works
+Route::get('/test-messaging-simple', function() {
+    return response()->json(['message' => 'Laravel routing works!', 'timestamp' => now()]);
 });
 
 // Messaging System Routes
@@ -158,6 +160,7 @@ Route::prefix('messaging')->middleware(['auth'])->group(function () {
     
     // SMS Routes
     Route::get('/sms', [MessagingController::class, 'smsIndex'])->name('messaging.sms');
+    Route::get('/sms/logs', [MessagingController::class, 'smsLogsPage'])->name('messaging.sms.logs');
     Route::post('/sms/send', [MessagingController::class, 'sendSms'])->name('messaging.sms.send');
     
     // Email Routes
@@ -166,9 +169,12 @@ Route::prefix('messaging')->middleware(['auth'])->group(function () {
     
     // Services Management Routes
     Route::get('/services', [MessagingController::class, 'servicesIndex'])->name('messaging.services');
+    Route::get('/services/{serviceId}', [MessagingController::class, 'getService'])->name('messaging.services.show');
     Route::post('/services', [MessagingController::class, 'storeService'])->name('messaging.services.store');
     Route::put('/services/{service}', [MessagingController::class, 'updateService'])->name('messaging.services.update');
-    Route::post('/services/{service}/test', [MessagingController::class, 'testService'])->name('messaging.services.test');
+    Route::delete('/services/{service}', [MessagingController::class, 'deleteService'])->name('messaging.services.delete');
+    Route::post('/services/{serviceId}/test', [MessagingController::class, 'testService'])->name('messaging.services.test');
+    Route::post('/services/{serviceId}/toggle/{activate}', [MessagingController::class, 'toggleServiceStatus'])->name('messaging.services.toggle');
 });
 
 // Other routes
@@ -179,4 +185,19 @@ Route::get('/security', [DashboardController::class, 'security'])->name('securit
 
 // API route for getting user role
 Route::get('/api/user-role', [AuthController::class, 'getUserRole'])->middleware('auth');
+
+// API route for SMS message details
+Route::get('/api/sms-messages/{messageId}', [MessagingController::class, 'getSmsMessage']);
+
+// API route for SMS message export
+Route::get('/api/sms-messages/{messageId}/export', [MessagingController::class, 'exportSmsMessage'])->middleware('auth');
+
+// API routes for SMS logs and balance
+Route::get('/api/sms-logs', [MessagingController::class, 'getSmsLogs'])->middleware('auth');
+Route::get('/api/sms-logs/export', [MessagingController::class, 'exportSmsLogs'])->middleware('auth');
+Route::get('/api/sms-balance', [MessagingController::class, 'getSmsBalance'])->middleware('auth');
+
+// API routes for email templates
+Route::post('/api/email-template/preview', [MessagingController::class, 'previewEmailTemplate'])->middleware('auth');
+Route::get('/api/email-template/{id}', [MessagingController::class, 'getEmailTemplate'])->middleware('auth');
 });
