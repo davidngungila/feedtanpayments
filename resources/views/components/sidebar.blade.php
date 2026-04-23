@@ -390,8 +390,7 @@
         </li>
 
         <!-- System Section -->
-        <li class="menu-header small text-uppercase"><span class="menu-header-text">System</span></li>
-        
+       
         <!-- Monitoring & Logs -->
         <li class="menu-item {{ request()->routeIs('monitoring*') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -639,7 +638,6 @@
         </li>
 
         <!-- Settings Section -->
-        <li class="menu-header small text-uppercase"><span class="menu-header-text">Settings</span></li>
         
         <!-- System Settings -->
         <li class="menu-item {{ request()->routeIs('system-settings*') ? 'active open' : '' }}">

@@ -3,11 +3,11 @@
     <div class="container-xxl">
         <div class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
             <div class="mb-2 mb-md-0">
-                © {{ date('Y') }} FeedTan CMG. All rights reserved.
+                © {{ date('Y') }} Jezdantech Cloud — Secure, scalable server management for hosting, email, and infrastructure.
             </div>
             <div class="d-none d-lg-inline-block">
-                <span class="text-muted">Secured System Powered by</span>
-                <a href="#" class="footer-link ms-2">FeedTan Team</a>
+                <span class="text-muted">Powered by</span>
+                <a href="#" class="footer-link ms-2">Jezdantech Team</a>
             </div>
         </div>
     </div>
