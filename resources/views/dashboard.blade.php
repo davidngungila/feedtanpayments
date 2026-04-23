@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - FeedTan Pay Analytics')
-@section('description', 'FeedTan Pay analytics dashboard with revenue, orders, and transaction statistics')
+@section('title', 'Dashboard - Server Management Panel')
+@section('description', 'Server management dashboard with system metrics, monitoring, and performance statistics')
 
 @section('content')
 <div class="row">
@@ -11,10 +11,10 @@
             <div class="d-flex align-items-start row">
                 <div class="col-sm-7">
                     <div class="card-body">
-                        <h5 class="card-title text-primary mb-3">Welcome {{ Auth::user()->name ?? 'John' }}! &#127881;</h5>
+                        <h5 class="card-title text-primary mb-3">Welcome {{ Auth::user()->name ?? 'Admin' }}! &#127881;</h5>
                         <p class="mb-4">
-                            Your comprehensive financial overview for <span id="currentDate"></span>.<br>
-                            You have <strong>TZS 28,458,500</strong> total balance with <strong>18</strong> active transactions this month.
+                            Your server management overview for <span id="currentDate"></span>.<br>
+                            You have <strong>12 servers</strong> online with <strong>98.5%</strong> overall uptime.
                         </p>
 
                         <!-- Quick Stats -->
@@ -22,21 +22,21 @@
                             <div class="col-6">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="avatar bg-success bg-opacity-10 rounded-circle me-2" style="width: 32px; height: 32px;">
-                                        <i class="bx bx-trending-up text-success"></i>
+                                        <i class="bx bx-server text-success"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-0">Monthly Growth</h6>
-                                        <small class="text-success">+12.5%</small>
+                                        <h6 class="mb-0">Server Status</h6>
+                                        <small class="text-success">12 Online</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="avatar bg-primary bg-opacity-10 rounded-circle me-2" style="width: 32px; height: 32px;">
-                                        <i class="bx bx-user text-primary"></i>
+                                        <i class="bx bx-cloud text-primary"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-0">Active Members</h6>
+                                        <h6 class="mb-0">Active Websites</h6>
                                         <small class="text-primary">247</small>
                                     </div>
                                 </div>
@@ -44,36 +44,36 @@
                             <div class="col-6">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="avatar bg-warning bg-opacity-10 rounded-circle me-2" style="width: 32px; height: 32px;">
-                                        <i class="bx bx-dollar text-warning"></i>
+                                        <i class="bx bx-hard-drive text-warning"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-0">Total Loans</h6>
-                                        <small class="text-warning">TZS 15,200,000</small>
+                                        <h6 class="mb-0">Disk Usage</h6>
+                                        <small class="text-warning">68.2%</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="avatar bg-info bg-opacity-10 rounded-circle me-2" style="width: 32px; height: 32px;">
-                                        <i class="bx bx-pie-chart text-info"></i>
+                                        <i class="bx bx-memory text-info"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-0">Investments</h6>
-                                        <small class="text-info">TZS 8,450,000</small>
+                                        <h6 class="mb-0">RAM Usage</h6>
+                                        <small class="text-info">45.8%</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="d-flex gap-2">
-                            <a href="{{ route('payments.initiate') }}" class="btn btn-sm btn-primary">
-                                <i class="bx bx-send me-1"></i> Send Payment
+                            <a href="#" class="btn btn-sm btn-primary">
+                                <i class="bx bx-plus me-1"></i> Add Server
                             </a>
-                            <a href="{{ route('payouts.initiate') }}" class="btn btn-sm btn-outline-success">
-                                <i class="bx bx-download me-1"></i> Request Payout
+                            <a href="#" class="btn btn-sm btn-outline-success">
+                                <i class="bx bx-shield me-1"></i> Security Check
                             </a>
-                            <a href="{{ route('billpay.create') }}" class="btn btn-sm btn-outline-info">
-                                <i class="bx bx-file me-1"></i> Add Bill
+                            <a href="#" class="btn btn-sm btn-outline-info">
+                                <i class="bx bx-cloud-download me-1"></i> Backup Now
                             </a>
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                         <div class="card-title d-flex align-items-start justify-content-between mb-4">
                             <div class="avatar flex-shrink-0">
                                 <div class="avatar bg-success bg-opacity-10 rounded-circle" style="width: 40px; height: 40px;">
-                                    <i class="bx bx-trending-up text-success"></i>
+                                    <i class="bx bx-server text-success"></i>
                                 </div>
                             </div>
                             <div class="dropdown">
@@ -107,18 +107,18 @@
                                     <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
-                                    <a class="dropdown-item" href="{{ route('report.overview') }}">View Report</a>
+                                    <a class="dropdown-item" href="#">View Servers</a>
                                     <a class="dropdown-item" href="javascript:void(0);">Export Data</a>
                                 </div>
                             </div>
                         </div>
-                        <p class="mb-1">Total Profit</p>
-                        <h4 class="card-title mb-3">TZS 28,628,000</h4>
+                        <p class="mb-1">Total Servers</p>
+                        <h4 class="card-title mb-3">12</h4>
                         <small class="text-success fw-medium">
-                            <i class="icon-base bx bx-up-arrow-alt"></i> +72.80%
+                            <i class="icon-base bx bx-up-arrow-alt"></i> 100% Online
                         </small>
                         <div class="mt-2">
-                            <small class="text-muted">vs last month</small>
+                            <small class="text-muted">All systems operational</small>
                         </div>
                     </div>
                 </div>
@@ -129,7 +129,7 @@
                         <div class="card-title d-flex align-items-start justify-content-between mb-4">
                             <div class="avatar flex-shrink-0">
                                 <div class="avatar bg-primary bg-opacity-10 rounded-circle" style="width: 40px; height: 40px;">
-                                    <i class="bx bx-wallet text-primary"></i>
+                                    <i class="bx bx-cloud text-primary"></i>
                                 </div>
                             </div>
                             <div class="dropdown">
@@ -137,15 +137,15 @@
                                     <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt6">
-                                    <a class="dropdown-item" href="{{ route('payments.history') }}">View Details</a>
+                                    <a class="dropdown-item" href="#">View Websites</a>
                                     <a class="dropdown-item" href="javascript:void(0);">Export Data</a>
                                 </div>
                             </div>
                         </div>
-                        <p class="mb-1">Total Revenue</p>
-                        <h4 class="card-title mb-3">TZS 45,679,000</h4>
+                        <p class="mb-1">Active Websites</p>
+                        <h4 class="card-title mb-3">247</h4>
                         <small class="text-success fw-medium">
-                            <i class="icon-base bx bx-up-arrow-alt"></i> +28.42%
+                            <i class="icon-base bx bx-up-arrow-alt"></i> +12.5%
                         </small>
                         <div class="mt-2">
                             <small class="text-muted">vs last month</small>
@@ -160,7 +160,7 @@
                         <div class="card-title d-flex align-items-start justify-content-between mb-4">
                             <div class="avatar flex-shrink-0">
                                 <div class="avatar bg-warning bg-opacity-10 rounded-circle" style="width: 40px; height: 40px;">
-                                    <i class="bx bx-dollar text-warning"></i>
+                                    <i class="bx bx-hard-drive text-warning"></i>
                                 </div>
                             </div>
                             <div class="dropdown">
@@ -168,18 +168,18 @@
                                     <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt7">
-                                    <a class="dropdown-item" href="{{ route('loans.my') }}">View Loans</a>
+                                    <a class="dropdown-item" href="#">View Storage</a>
                                     <a class="dropdown-item" href="javascript:void(0);">Export Data</a>
                                 </div>
                             </div>
                         </div>
-                        <p class="mb-1">Active Loans</p>
-                        <h4 class="card-title mb-3">TZS 15,200,000</h4>
+                        <p class="mb-1">Disk Usage</p>
+                        <h4 class="card-title mb-3">68.2%</h4>
                         <small class="text-warning fw-medium">
-                            <i class="icon-base bx bx-minus"></i> -5.2%
+                            <i class="icon-base bx bx-up-arrow-alt"></i> +2.1%
                         </small>
                         <div class="mt-2">
-                            <small class="text-muted">vs last month</small>
+                            <small class="text-muted">vs last week</small>
                         </div>
                     </div>
                 </div>
@@ -190,7 +190,7 @@
                         <div class="card-title d-flex align-items-start justify-content-between mb-4">
                             <div class="avatar flex-shrink-0">
                                 <div class="avatar bg-info bg-opacity-10 rounded-circle" style="width: 40px; height: 40px;">
-                                    <i class="bx bx-group text-info"></i>
+                                    <i class="bx bx-memory text-info"></i>
                                 </div>
                             </div>
                             <div class="dropdown">
@@ -198,61 +198,61 @@
                                     <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt8">
-                                    <a class="dropdown-item" href="{{ route('members.all') }}">View Members</a>
+                                    <a class="dropdown-item" href="#">View Memory</a>
                                     <a class="dropdown-item" href="javascript:void(0);">Export Data</a>
                                 </div>
                             </div>
                         </div>
-                        <p class="mb-1">Total Members</p>
-                        <h4 class="card-title mb-3">247</h4>
+                        <p class="mb-1">RAM Usage</p>
+                        <h4 class="card-title mb-3">45.8%</h4>
                         <small class="text-success fw-medium">
-                            <i class="icon-base bx bx-up-arrow-alt"></i> +12.5%
+                            <i class="icon-base bx bx-down-arrow-alt"></i> -3.2%
                         </small>
                         <div class="mt-2">
-                            <small class="text-muted">vs last month</small>
+                            <small class="text-muted">vs last week</small>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Total Revenue -->
+    <!-- Server Performance Overview -->
     <div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6 total-revenue">
         <div class="card">
             <div class="row row-bordered g-0">
                 <div class="col-lg-8">
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <div class="card-title mb-0">
-                            <h5 class="m-0 me-2">Total Revenue Overview</h5>
-                            <small class="text-muted">Financial performance analysis</small>
+                            <h5 class="m-0 me-2">Server Performance Overview</h5>
+                            <small class="text-muted">System resource monitoring and analysis</small>
                         </div>
                         <div class="dropdown">
                             <button class="btn p-0" type="button" id="totalRevenue" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="icon-base bx bx-dots-vertical-rounded icon-lg text-body-secondary"></i>
                             </button>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="totalRevenue">
-                                <a class="dropdown-item" href="{{ route('report.overview') }}">View Report</a>
+                                <a class="dropdown-item" href="#">View Details</a>
                                 <a class="dropdown-item" href="javascript:void(0);">Refresh Data</a>
                                 <a class="dropdown-item" href="javascript:void(0);">Export Chart</a>
-                                <a class="dropdown-item" href="javascript:void(0);">Share Report</a>
+                                <a class="dropdown-item" href="javascript:void(0);">Download Report</a>
                             </div>
                         </div>
                     </div>
                     <div id="totalRevenueChart" class="px-3"></div>
-                    <!-- Revenue Summary -->
+                    <!-- Performance Summary -->
                     <div class="card-body border-top">
                         <div class="row text-center">
                             <div class="col-4">
-                                <h5 class="text-primary mb-1">TZS 45.6M</h5>
-                                <small class="text-muted">Total Revenue</small>
+                                <h5 class="text-primary mb-1">98.5%</h5>
+                                <small class="text-muted">Uptime</small>
                             </div>
                             <div class="col-4">
-                                <h5 class="text-success mb-1">TZS 28.6M</h5>
-                                <small class="text-muted">Net Profit</small>
+                                <h5 class="text-success mb-1">45.8%</h5>
+                                <small class="text-muted">Avg CPU</small>
                             </div>
                             <div class="col-4">
-                                <h5 class="text-warning mb-1">62.8%</h5>
-                                <small class="text-muted">Profit Margin</small>
+                                <h5 class="text-warning mb-1">68.2%</h5>
+                                <small class="text-muted">Disk Used</small>
                             </div>
                         </div>
                     </div>
@@ -260,47 +260,47 @@
                 <div class="col-lg-4">
                     <div class="card-body px-xl-9 py-12 d-flex align-items-center flex-column">
                         <div class="text-center mb-6">
-                            <h6 class="mb-2">Revenue Growth</h6>
+                            <h6 class="mb-2">System Performance</h6>
                             <div class="btn-group">
-                                <button type="button" class="btn btn-outline-primary active">2024</button>
+                                <button type="button" class="btn btn-outline-primary active">Today</button>
                                 <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                                     <span class="visually-hidden">Toggle Dropdown</span>
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="javascript:void(0);">2023</a></li>
-                                    <li><a class="dropdown-item" href="javascript:void(0);">2022</a></li>
-                                    <li><a class="dropdown-item" href="javascript:void(0);">2021</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0);">This Week</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0);">This Month</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0);">This Year</a></li>
                                 </ul>
                             </div>
                         </div>
 
                         <div id="growthChart"></div>
                         <div class="text-center fw-medium my-6">
-                            <h4 class="mb-1">62% Company Growth</h4>
-                            <small class="text-success">Year-over-Year</small>
+                            <h4 class="mb-1">98.5% Uptime</h4>
+                            <small class="text-success">Last 30 days</small>
                         </div>
 
                         <div class="d-flex gap-11 justify-content-between w-100">
                             <div class="d-flex">
                                 <div class="avatar me-2">
                                     <span class="avatar-initial rounded-2 bg-label-primary">
-                                        <i class="icon-base bx bx-dollar icon-lg text-primary"></i>
+                                        <i class="icon-base bx bx-server icon-lg text-primary"></i>
                                     </span>
                                 </div>
                                 <div class="d-flex flex-column">
-                                    <small>2023 Revenue</small>
-                                    <h6 class="mb-0">TZS 32.5M</h6>
+                                    <small>Active Servers</small>
+                                    <h6 class="mb-0">12</h6>
                                 </div>
                             </div>
                             <div class="d-flex">
                                 <div class="avatar me-2">
                                     <span class="avatar-initial rounded-2 bg-label-info">
-                                        <i class="icon-base bx bx-wallet icon-lg text-info"></i>
+                                        <i class="icon-base bx bx-cloud icon-lg text-info"></i>
                                     </span>
                                 </div>
                                 <div class="d-flex flex-column">
-                                    <small>2022 Revenue</small>
-                                    <h6 class="mb-0">TZS 41.2M</h6>
+                                    <small>Total Websites</small>
+                                    <h6 class="mb-0">247</h6>
                                 </div>
                             </div>
                         </div>
@@ -308,16 +308,16 @@
                         <!-- Additional Metrics -->
                         <div class="mt-4 w-100">
                             <div class="d-flex justify-content-between mb-2">
-                                <small>Monthly Average</small>
-                                <strong>TZS 3.8M</strong>
+                                <small>Avg Response Time</small>
+                                <strong class="text-success">142ms</strong>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
-                                <small>Quarterly Growth</small>
-                                <strong class="text-success">+18.5%</strong>
+                                <small>Bandwidth Usage</small>
+                                <strong class="text-warning">3.2TB</strong>
                             </div>
                             <div class="d-flex justify-content-between">
-                                <small>Projected Annual</small>
-                                <strong class="text-primary">TZS 54.7M</strong>
+                                <small>SSL Certificates</small>
+                                <strong class="text-primary">156</strong>
                             </div>
                         </div>
                     </div>
@@ -325,7 +325,7 @@
             </div>
         </div>
     </div>
-    <!--/ Total Revenue -->
+    <!--/ Server Performance -->
     <div class="col-12 col-md-8 col-lg-12 col-xxl-4 order-3 order-md-2 profile-report">
         <div class="row">
             <div class="col-6 mb-6 payments">
@@ -334,7 +334,7 @@
                         <div class="card-title d-flex align-items-start justify-content-between mb-4">
                             <div class="avatar flex-shrink-0">
                                 <div class="avatar bg-primary bg-opacity-10 rounded-circle" style="width: 40px; height: 40px;">
-                                    <i class="bx bx-credit-card text-primary"></i>
+                                    <i class="bx bx-data text-primary"></i>
                                 </div>
                             </div>
                             <div class="dropdown">
@@ -342,15 +342,15 @@
                                     <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt4">
-                                    <a class="dropdown-item" href="{{ route('payments.history') }}">View History</a>
+                                    <a class="dropdown-item" href="#">View Bandwidth</a>
                                     <a class="dropdown-item" href="javascript:void(0);">Export Data</a>
                                 </div>
                             </div>
                         </div>
-                        <p class="mb-1">Monthly Payments</p>
-                        <h4 class="card-title mb-3">TZS 2,456,000</h4>
-                        <small class="text-danger fw-medium">
-                            <i class="icon-base bx bx-down-arrow-alt"></i> -14.82%
+                        <p class="mb-1">Monthly Bandwidth</p>
+                        <h4 class="card-title mb-3">3.2 TB</h4>
+                        <small class="text-success fw-medium">
+                            <i class="icon-base bx bx-up-arrow-alt"></i> +8.5%
                         </small>
                         <div class="mt-2">
                             <small class="text-muted">vs last month</small>
@@ -364,7 +364,7 @@
                         <div class="card-title d-flex align-items-start justify-content-between mb-4">
                             <div class="avatar flex-shrink-0">
                                 <div class="avatar bg-success bg-opacity-10 rounded-circle" style="width: 40px; height: 40px;">
-                                    <i class="bx bx-exchange text-success"></i>
+                                    <i class="bx bx-shield text-success"></i>
                                 </div>
                             </div>
                             <div class="dropdown">
@@ -372,15 +372,15 @@
                                     <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="cardOpt1">
-                                    <a class="dropdown-item" href="{{ route('report.statement') }}">View Statement</a>
+                                    <a class="dropdown-item" href="#">Security Report</a>
                                     <a class="dropdown-item" href="javascript:void(0);">Export Data</a>
                                 </div>
                             </div>
                         </div>
-                        <p class="mb-1">Total Transactions</p>
-                        <h4 class="card-title mb-3">TZS 14,857,000</h4>
+                        <p class="mb-1">Security Events</p>
+                        <h4 class="card-title mb-3">24</h4>
                         <small class="text-success fw-medium">
-                            <i class="icon-base bx bx-up-arrow-alt"></i> +28.14%
+                            <i class="icon-base bx bx-down-arrow-alt"></i> -15.2%
                         </small>
                         <div class="mt-2">
                             <small class="text-muted">vs last month</small>
@@ -394,14 +394,14 @@
                         <div class="d-flex justify-content-between align-items-center flex-sm-row flex-column gap-10 flex-wrap">
                             <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
                                 <div class="card-title mb-6">
-                                    <h5 class="text-nowrap mb-1">Financial Performance</h5>
-                                    <span class="badge bg-label-warning">YEAR {{ date('Y') }}</span>
+                                    <h5 class="text-nowrap mb-1">System Performance</h5>
+                                    <span class="badge bg-label-success">YEAR {{ date('Y') }}</span>
                                 </div>
                                 <div class="mt-sm-auto">
                                     <span class="text-success text-nowrap fw-medium">
-                                        <i class="icon-base bx bx-up-arrow-alt"></i> 68.2%
+                                        <i class="icon-base bx bx-up-arrow-alt"></i> 98.5%
                                     </span>
-                                    <h4 class="mb-0">TZS 84,686,000</h4>
+                                    <h4 class="mb-0">Uptime</h4>
                                 </div>
                             </div>
                             <div id="profileReportChart"></div>
@@ -420,14 +420,14 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div class="card-title mb-0">
                     <h5 class="mb-1">Recent Activity</h5>
-                    <p class="card-subtitle">Latest transactions and system activities</p>
+                    <p class="card-subtitle">Latest server events and system activities</p>
                 </div>
                 <div class="dropdown">
                     <button class="btn text-body-secondary p-0" type="button" id="recentActivity" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="icon-base bx bx-dots-vertical-rounded icon-lg"></i>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="recentActivity">
-                        <a class="dropdown-item" href="{{ route('report.statement') }}">View All</a>
+                        <a class="dropdown-item" href="#">View All</a>
                         <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
                         <a class="dropdown-item" href="javascript:void(0);">Export</a>
                     </div>
@@ -441,8 +441,7 @@
                                 <th>Date & Time</th>
                                 <th>Type</th>
                                 <th>Description</th>
-                                <th>Member</th>
-                                <th>Amount</th>
+                                <th>Server</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -456,21 +455,20 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-label-success">Payment</span>
+                                    <span class="badge bg-label-success">Backup</span>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar bg-success bg-opacity-10 rounded-circle me-2" style="width: 32px; height: 32px;">
-                                            <i class="bx bx-dollar text-success"></i>
+                                            <i class="bx bx-cloud-download text-success"></i>
                                         </div>
                                         <div>
-                                            <h6 class="mb-0">Loan Repayment</h6>
-                                            <small class="text-muted">Monthly installment</small>
+                                            <h6 class="mb-0">Automatic Backup</h6>
+                                            <small class="text-muted">Daily backup completed</small>
                                         </div>
                                     </div>
                                 </td>
-                                <td>John Smith</td>
-                                <td class="text-success">+TZS 450,000</td>
+                                <td>web-server-01</td>
                                 <td><span class="badge bg-success">Completed</span></td>
                                 <td>
                                     <div class="dropdown">
@@ -479,7 +477,7 @@
                                         </button>
                                         <div class="dropdown-menu">
                                             <a class="dropdown-item" href="javascript:void(0);">View Details</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Download Receipt</a>
+                                            <a class="dropdown-item" href="javascript:void(0);">Download Log</a>
                                         </div>
                                     </div>
                                 </td>
@@ -492,22 +490,21 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-label-primary">Deposit</span>
+                                    <span class="badge bg-label-primary">Deployment</span>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar bg-primary bg-opacity-10 rounded-circle me-2" style="width: 32px; height: 32px;">
-                                            <i class="bx bx-wallet text-primary"></i>
+                                            <i class="bx bx-git text-primary"></i>
                                         </div>
                                         <div>
-                                            <h6 class="mb-0">Savings Deposit</h6>
-                                            <small class="text-muted">Regular savings</small>
+                                            <h6 class="mb-0">Git Deployment</h6>
+                                            <small class="text-muted">Production deployment</small>
                                         </div>
                                     </div>
                                 </td>
-                                <td>Sarah Johnson</td>
-                                <td class="text-success">+TZS 200,000</td>
-                                <td><span class="badge bg-success">Completed</span></td>
+                                <td>app-server-02</td>
+                                <td><span class="badge bg-success">Success</span></td>
                                 <td>
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
@@ -515,7 +512,7 @@
                                         </button>
                                         <div class="dropdown-menu">
                                             <a class="dropdown-item" href="javascript:void(0);">View Details</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Download Receipt</a>
+                                            <a class="dropdown-item" href="javascript:void(0);">Rollback</a>
                                         </div>
                                     </div>
                                 </td>
@@ -528,21 +525,20 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-label-warning">Withdrawal</span>
+                                    <span class="badge bg-label-warning">Security</span>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar bg-warning bg-opacity-10 rounded-circle me-2" style="width: 32px; height: 32px;">
-                                            <i class="bx bx-money-withdraw text-warning"></i>
+                                            <i class="bx bx-shield text-warning"></i>
                                         </div>
                                         <div>
-                                            <h6 class="mb-0">Savings Withdrawal</h6>
-                                            <small class="text-muted">Emergency withdrawal</small>
+                                            <h6 class="mb-0">SSL Certificate Renewal</h6>
+                                            <small class="text-muted">Auto-renewal triggered</small>
                                         </div>
                                     </div>
                                 </td>
-                                <td>Michael Brown</td>
-                                <td class="text-danger">-TZS 150,000</td>
+                                <td>web-server-01</td>
                                 <td><span class="badge bg-warning">Processing</span></td>
                                 <td>
                                     <div class="dropdown">
@@ -551,7 +547,7 @@
                                         </button>
                                         <div class="dropdown-menu">
                                             <a class="dropdown-item" href="javascript:void(0);">View Details</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Approve</a>
+                                            <a class="dropdown-item" href="javascript:void(0);">Force Renew</a>
                                         </div>
                                     </div>
                                 </td>
@@ -564,21 +560,20 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-label-info">Investment</span>
+                                    <span class="badge bg-label-info">System</span>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar bg-info bg-opacity-10 rounded-circle me-2" style="width: 32px; height: 32px;">
-                                            <i class="bx bx-trending-up text-info"></i>
+                                            <i class="bx bx-cog text-info"></i>
                                         </div>
                                         <div>
-                                            <h6 class="mb-0">New Investment</h6>
-                                            <small class="text-muted">Fixed deposit</small>
+                                            <h6 class="mb-0">System Update</h6>
+                                            <small class="text-muted">Security patches applied</small>
                                         </div>
                                     </div>
                                 </td>
-                                <td>Emily Davis</td>
-                                <td class="text-success">+TZS 1,000,000</td>
+                                <td>db-server-03</td>
                                 <td><span class="badge bg-success">Completed</span></td>
                                 <td>
                                     <div class="dropdown">
@@ -587,48 +582,12 @@
                                         </button>
                                         <div class="dropdown-menu">
                                             <a class="dropdown-item" href="javascript:void(0);">View Details</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Download Receipt</a>
+                                            <a class="dropdown-item" href="javascript:void(0);">Restart Service</a>
                                         </div>
                                     </div>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <div>
-                                        <h6 class="mb-0">Dec 21, 2024</h6>
-                                        <small class="text-muted">4:20 PM</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-label-secondary">Welfare</span>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar bg-secondary bg-opacity-10 rounded-circle me-2" style="width: 32px; height: 32px;">
-                                            <i class="bx bx-heart text-secondary"></i>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-0">Welfare Contribution</h6>
-                                            <small class="text-muted">Monthly contribution</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>Robert Wilson</td>
-                                <td class="text-success">+TZS 50,000</td>
-                                <td><span class="badge bg-success">Completed</span></td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                            <i class="bx bx-dots-horizontal-rounded"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="javascript:void(0);">View Details</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Download Receipt</a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
+                                                    </tbody>
                     </table>
                 </div>
             </div>
@@ -643,20 +602,20 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-3">
-                    <a href="{{ route('payments.initiate') }}" class="btn btn-primary">
-                        <i class="bx bx-send me-2"></i> Send Payment
+                    <a href="#" class="btn btn-primary">
+                        <i class="bx bx-server me-2"></i> Add Server
                     </a>
-                    <a href="{{ route('savings.deposit') }}" class="btn btn-outline-success">
-                        <i class="bx bx-plus-circle me-2"></i> Make Deposit
+                    <a href="#" class="btn btn-outline-success">
+                        <i class="bx bx-cloud-download me-2"></i> Create Backup
                     </a>
-                    <a href="{{ route('loans.apply') }}" class="btn btn-outline-warning">
-                        <i class="bx bx-file me-2"></i> Apply for Loan
+                    <a href="#" class="btn btn-outline-warning">
+                        <i class="bx bx-shield me-2"></i> Security Scan
                     </a>
-                    <a href="{{ route('investment.new') }}" class="btn btn-outline-info">
-                        <i class="bx bx-trending-up me-2"></i> New Investment
+                    <a href="#" class="btn btn-outline-info">
+                        <i class="bx bx-git me-2"></i> Deploy Website
                     </a>
-                    <a href="{{ route('members.add') }}" class="btn btn-outline-secondary">
-                        <i class="bx bx-user-plus me-2"></i> Add Member
+                    <a href="#" class="btn btn-outline-secondary">
+                        <i class="bx bx-user-plus me-2"></i> Add Client
                     </a>
                 </div>
             </div>
@@ -670,7 +629,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
                     <div class="avatar bg-success bg-opacity-10 rounded-circle me-3" style="width: 12px; height: 12px;"></div>
-                    <span class="fw-medium">Payment Gateway</span>
+                    <span class="fw-medium">Web Server</span>
                     <small class="text-success ms-auto">Online</small>
                 </div>
                 <div class="d-flex align-items-center mb-3">
@@ -680,7 +639,7 @@
                 </div>
                 <div class="d-flex align-items-center mb-3">
                     <div class="avatar bg-success bg-opacity-10 rounded-circle me-3" style="width: 12px; height: 12px;"></div>
-                    <span class="fw-medium">Email Service</span>
+                    <span class="fw-medium">Mail Server</span>
                     <small class="text-success ms-auto">Active</small>
                 </div>
                 <div class="d-flex align-items-center mb-3">
@@ -690,8 +649,8 @@
                 </div>
                 <div class="d-flex align-items-center">
                     <div class="avatar bg-success bg-opacity-10 rounded-circle me-3" style="width: 12px; height: 12px;"></div>
-                    <span class="fw-medium">API Services</span>
-                    <small class="text-success ms-auto">Operational</small>
+                    <span class="fw-medium">Firewall</span>
+                    <small class="text-success ms-auto">Active</small>
                 </div>
                 
                 <div class="mt-4 pt-4 border-top">
@@ -786,7 +745,7 @@
                         </div>
                     </div>
 
-                    <!-- API & Payment Status -->
+                    <!-- API & Network Status -->
                     <div class="col-lg-3 col-md-6 mb-4">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body">
@@ -795,22 +754,22 @@
                                         <i class="bx bx-wifi text-info"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-0">API & Payments</h6>
+                                        <h6 class="mb-0">API & Network</h6>
                                         <span class="badge bg-success">Healthy</span>
                                     </div>
                                 </div>
                                 <div class="small text-muted">
                                     <div class="d-flex justify-content-between mb-1">
-                                        <span>STK Push</span>
-                                        <span class="text-success">Working</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span>API Time</span>
+                                        <span>API Response</span>
                                         <span class="text-success">85ms</span>
                                     </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Bandwidth</span>
+                                        <span class="text-success">3.2TB</span>
+                                    </div>
                                     <div class="d-flex justify-content-between">
-                                        <span>Success Rate</span>
-                                        <span class="text-success">99.2%</span>
+                                        <span>Connections</span>
+                                        <span class="text-success">247</span>
                                     </div>
                                 </div>
                             </div>
@@ -851,13 +810,13 @@
 
                 <!-- Detailed Health Metrics -->
                 <div class="row mt-4">
-                    <!-- Transactions Health -->
+                    <!-- Server Requests Health -->
                     <div class="col-lg-4 mb-4">
                         <div class="card border-0 shadow-sm">
                             <div class="card-header bg-light">
                                 <h6 class="mb-0">
-                                    <i class="bx bx-credit-card me-2"></i>
-                                    Transactions Health
+                                    <i class="bx bx-server me-2"></i>
+                                    Server Requests
                                 </h6>
                             </div>
                             <div class="card-body">
@@ -930,10 +889,10 @@
                                         <span class="text-warning">[10:45 AM]</span> - High RAM usage detected
                                     </div>
                                     <div class="mb-2">
-                                        <span class="text-info">[09:30 AM]</span> - Airtel Money API slow response
+                                        <span class="text-info">[09:30 AM]</span> - SSL certificate renewal needed
                                     </div>
                                     <div class="mb-2">
-                                        <span class="text-danger">[08:15 AM]</span> - Memory limit exceeded
+                                        <span class="text-danger">[08:15 AM]</span> - Disk space running low
                                     </div>
                                     <div>
                                         <span class="text-success">[07:00 AM]</span> - Daily backup completed

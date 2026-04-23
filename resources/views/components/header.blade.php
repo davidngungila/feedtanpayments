@@ -85,6 +85,12 @@
             </li>
             <!--/ Notifications -->
 
+            <!-- Client Switcher -->
+            <li class="nav-item ms-3">
+                @include('components.client-switcher')
+            </li>
+            <!--/ Client Switcher -->
+
             <!-- User -->
             <li class="nav-item navbar-dropdown dropdown-user dropdown ms-3">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">

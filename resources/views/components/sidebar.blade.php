@@ -3,7 +3,7 @@
     <div class="app-brand demo">
         <a href="{{ route('dashboard') }}" class="app-brand-link">
           
-            <span class="app-brand-text demo menu-text fw-bold ms-2">FeedTan Pay</span>
+            <span class="app-brand-text demo menu-text fw-bold ms-2">Server Panel</span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
@@ -16,489 +16,742 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
+        <!-- Core Section -->
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">Core</span></li>
+        
         <!-- Dashboard -->
         <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <a href="{{ route('dashboard') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-smile"></i>
-                <div class="text-truncate" data-i18n="Dashboard">Dashboard</div>
+                <div class="text-truncate">Dashboard</div>
             </a>
         </li>
 
-        <!-- Payments -->
-        <li class="menu-item {{ request()->routeIs('payments*') ? 'active open' : '' }}">
+        <!-- Client Management -->
+        <li class="menu-item {{ request()->routeIs('clients*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-user-plus"></i>
+                <div class="text-truncate">Client Management</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('clients.index') ? 'active' : '' }}">
+                    <a href="{{ route('clients.index') }}" class="menu-link">
+                        <div class="text-truncate">All Clients</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('clients.create') ? 'active' : '' }}">
+                    <a href="{{ route('clients.create') }}" class="menu-link">
+                        <div class="text-truncate">Add Client</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('clients.packages') ? 'active' : '' }}">
+                    <a href="{{ route('clients.packages') }}" class="menu-link">
+                        <div class="text-truncate">Client Packages</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('clients.resource-limits') ? 'active' : '' }}">
+                    <a href="{{ route('clients.resource-limits') }}" class="menu-link">
+                        <div class="text-truncate">Resource Limits</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('clients.disk-space') ? 'active' : '' }}">
+                    <a href="{{ route('clients.disk-space') }}" class="menu-link">
+                        <div class="text-truncate">Disk Space</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('clients.bandwidth') ? 'active' : '' }}">
+                    <a href="{{ route('clients.bandwidth') }}" class="menu-link">
+                        <div class="text-truncate">Bandwidth</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('clients.domains-limit') ? 'active' : '' }}">
+                    <a href="{{ route('clients.domains-limit') }}" class="menu-link">
+                        <div class="text-truncate">Domains Limit</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('clients.login-access') ? 'active' : '' }}">
+                    <a href="{{ route('clients.login-access') }}" class="menu-link">
+                        <div class="text-truncate">Client Login Access</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Server Management -->
+        <li class="menu-item {{ request()->routeIs('servers*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-server"></i>
+                <div class="text-truncate">Server Management</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('servers.index') ? 'active' : '' }}">
+                    <a href="{{ route('servers.index') }}" class="menu-link">
+                        <div class="text-truncate">All Servers</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('servers.create') ? 'active' : '' }}">
+                    <a href="{{ route('servers.create') }}" class="menu-link">
+                        <div class="text-truncate">Add New Server</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('servers.monitoring') ? 'active' : '' }}">
+                    <a href="{{ route('servers.monitoring') }}" class="menu-link">
+                        <div class="text-truncate">Server Monitoring</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('servers.services') ? 'active' : '' }}">
+                    <a href="{{ route('servers.services') }}" class="menu-link">
+                        <div class="text-truncate">Services Management</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('servers.webserver') ? 'active' : '' }}">
+                    <a href="{{ route('servers.webserver') }}" class="menu-link">
+                        <div class="text-truncate">Nginx / Apache</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('servers.database') ? 'active' : '' }}">
+                    <a href="{{ route('servers.database') }}" class="menu-link">
+                        <div class="text-truncate">MySQL / MariaDB</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('servers.phpfpm') ? 'active' : '' }}">
+                    <a href="{{ route('servers.phpfpm') }}" class="menu-link">
+                        <div class="text-truncate">PHP-FPM</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('servers.ssh') ? 'active' : '' }}">
+                    <a href="{{ route('servers.ssh') }}" class="menu-link">
+                        <div class="text-truncate">SSH Access</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('servers.firewall') ? 'active' : '' }}">
+                    <a href="{{ route('servers.firewall') }}" class="menu-link">
+                        <div class="text-truncate">Firewall (UFW)</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('servers.fail2ban') ? 'active' : '' }}">
+                    <a href="{{ route('servers.fail2ban') }}" class="menu-link">
+                        <div class="text-truncate">Fail2Ban Security</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Domain & DNS -->
+        <li class="menu-item {{ request()->routeIs('domains*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-globe"></i>
+                <div class="text-truncate">Domain & DNS</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('domains.index') ? 'active' : '' }}">
+                    <a href="{{ route('domains.index') }}" class="menu-link">
+                        <div class="text-truncate">All Domains</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('domains.create') ? 'active' : '' }}">
+                    <a href="{{ route('domains.create') }}" class="menu-link">
+                        <div class="text-truncate">Add Domain</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('domains.dns-management') ? 'active' : '' }}">
+                    <a href="{{ route('domains.dns-management') }}" class="menu-link">
+                        <div class="text-truncate">DNS Management</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('domains.a-records') ? 'active' : '' }}">
+                    <a href="{{ route('domains.a-records') }}" class="menu-link">
+                        <div class="text-truncate">A Records</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('domains.cname-records') ? 'active' : '' }}">
+                    <a href="{{ route('domains.cname-records') }}" class="menu-link">
+                        <div class="text-truncate">CNAME Records</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('domains.mx-records') ? 'active' : '' }}">
+                    <a href="{{ route('domains.mx-records') }}" class="menu-link">
+                        <div class="text-truncate">MX Records</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('domains.nameservers') ? 'active' : '' }}">
+                    <a href="{{ route('domains.nameservers') }}" class="menu-link">
+                        <div class="text-truncate">Nameservers</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('domains.ssl-certificates') ? 'active' : '' }}">
+                    <a href="{{ route('domains.ssl-certificates') }}" class="menu-link">
+                        <div class="text-truncate">SSL Certificates</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- File Manager -->
+        <li class="menu-item {{ request()->routeIs('filemanager*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-folder"></i>
+                <div class="text-truncate">File Manager</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('filemanager.index') ? 'active' : '' }}">
+                    <a href="{{ route('filemanager.index') }}" class="menu-link">
+                        <div class="text-truncate">File Manager</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('filemanager.git-deployment') ? 'active' : '' }}">
+                    <a href="{{ route('filemanager.git-deployment') }}" class="menu-link">
+                        <div class="text-truncate">Git Deployment</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('filemanager.environment-settings') ? 'active' : '' }}">
+                    <a href="{{ route('filemanager.environment-settings') }}" class="menu-link">
+                        <div class="text-truncate">Environment Settings</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('filemanager.php-versions') ? 'active' : '' }}">
+                    <a href="{{ route('filemanager.php-versions') }}" class="menu-link">
+                        <div class="text-truncate">PHP Versions</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('filemanager.staging-environment') ? 'active' : '' }}">
+                    <a href="{{ route('filemanager.staging-environment') }}" class="menu-link">
+                        <div class="text-truncate">Staging Environment</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Website Hosting -->
+        <li class="menu-item {{ request()->routeIs('hosting*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-cloud"></i>
+                <div class="text-truncate">Website Hosting</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('hosting.index') ? 'active' : '' }}">
+                    <a href="{{ route('hosting.index') }}" class="menu-link">
+                        <div class="text-truncate">All Websites</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('hosting.create') ? 'active' : '' }}">
+                    <a href="{{ route('hosting.create') }}" class="menu-link">
+                        <div class="text-truncate">Create Website</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('hosting.file-manager') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">File Manager</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('hosting.git') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Git Deployment</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('hosting.environment') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Environment Settings</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('hosting.php-versions') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">PHP Versions</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('hosting.staging') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Staging Environment</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Email Management -->
+        <li class="menu-item {{ request()->routeIs('email*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-envelope"></i>
+                <div class="text-truncate">Email Management</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('email.index') ? 'active' : '' }}">
+                    <a href="{{ route('email.index') }}" class="menu-link">
+                        <div class="text-truncate">Email Accounts</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('email.create') ? 'active' : '' }}">
+                    <a href="{{ route('email.create') }}" class="menu-link">
+                        <div class="text-truncate">Create Email</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('email.forwarders') ? 'active' : '' }}">
+                    <a href="{{ route('email.forwarders') }}" class="menu-link">
+                        <div class="text-truncate">Forwarders</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('email.auto-responders') ? 'active' : '' }}">
+                    <a href="{{ route('email.auto-responders') }}" class="menu-link">
+                        <div class="text-truncate">Auto Responders</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('email.spam-filter') ? 'active' : '' }}">
+                    <a href="{{ route('email.spam-filter') }}" class="menu-link">
+                        <div class="text-truncate">Spam Filter</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('email.webmail-access') ? 'active' : '' }}">
+                    <a href="{{ route('email.webmail-access') }}" class="menu-link">
+                        <div class="text-truncate">Webmail Access</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Database Management -->
+        <li class="menu-item {{ request()->routeIs('database*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-data"></i>
+                <div class="text-truncate">Database Management</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('database.index') ? 'active' : '' }}">
+                    <a href="{{ route('database.index') }}" class="menu-link">
+                        <div class="text-truncate">All Databases</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('database.create') ? 'active' : '' }}">
+                    <a href="{{ route('database.create') }}" class="menu-link">
+                        <div class="text-truncate">Create Database</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('database.users') ? 'active' : '' }}">
+                    <a href="{{ route('database.users') }}" class="menu-link">
+                        <div class="text-truncate">Database Users</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('database.remote-access') ? 'active' : '' }}">
+                    <a href="{{ route('database.remote-access') }}" class="menu-link">
+                        <div class="text-truncate">Remote Access</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('database.phpmyadmin') ? 'active' : '' }}">
+                    <a href="{{ route('database.phpmyadmin') }}" class="menu-link">
+                        <div class="text-truncate">phpMyAdmin</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Plans & Billing -->
+        <li class="menu-item {{ request()->routeIs('billing*') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-credit-card"></i>
-                <div class="text-truncate" data-i18n="Payments">Payments</div>
+                <div class="text-truncate">Plans & Billing</div>
             </a>
             <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('payments.initiate') ? 'active' : '' }}">
-                    <a href="{{ route('payments.initiate') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Initiate Payment">Initiate Payment</div>
+                <li class="menu-item {{ request()->routeIs('billing.plans') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Hosting Plans</div>
                     </a>
                 </li>
-                <li class="menu-item {{ request()->routeIs('payments.history') ? 'active' : '' }}">
-                    <a href="{{ route('payments.history') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Payment History">Payment History</div>
+                <li class="menu-item {{ request()->routeIs('billing.subscriptions') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Subscriptions</div>
                     </a>
                 </li>
-            </ul>
-        </li>
-
-        <!-- Payouts -->
-        <li class="menu-item {{ request()->routeIs('payouts*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-money-withdraw"></i>
-                <div class="text-truncate" data-i18n="Payouts">Payouts</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('payouts.initiate') ? 'active' : '' }}">
-                    <a href="{{ route('payouts.initiate') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Initiate Payout">Initiate Payout</div>
+                <li class="menu-item {{ request()->routeIs('billing.invoices') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Invoices</div>
                     </a>
                 </li>
-                <li class="menu-item {{ request()->routeIs('payouts.history') ? 'active' : '' }}">
-                    <a href="{{ route('payouts.history') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Payout History">Payout History</div>
+                <li class="menu-item {{ request()->routeIs('billing.transactions') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Transactions</div>
                     </a>
                 </li>
-            </ul>
-        </li>
-
-        <!-- BillPay -->
-        <li class="menu-item {{ request()->routeIs('billpay*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-file"></i>
-                <div class="text-truncate" data-i18n="BillPay">BillPay</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('billpay.all') ? 'active' : '' }}">
-                    <a href="{{ route('billpay.all') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="All Bills">All Bills</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('billpay.create') ? 'active' : '' }}">
-                    <a href="{{ route('billpay.create') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Create Bill">Create Bill</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Report -->
-        <li class="menu-item {{ request()->routeIs('report*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-chart"></i>
-                <div class="text-truncate" data-i18n="Report">Report</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('report.overview') ? 'active' : '' }}">
-                    <a href="{{ route('report.overview') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Overview">Overview</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('report.balance') ? 'active' : '' }}">
-                    <a href="{{ route('report.balance') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Balance">Balance</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('report.statement') ? 'active' : '' }}">
-                    <a href="{{ route('report.statement') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Statement">Statement</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Messaging -->
-        <li class="menu-item {{ request()->routeIs('messaging*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-message-square-dots"></i>
-                <div class="text-truncate" data-i18n="Messaging">Messaging</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('messaging.dashboard') ? 'active' : '' }}">
-                    <a href="{{ route('messaging.dashboard') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Dashboard">Dashboard</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('messaging.sms') ? 'active' : '' }}">
-                    <a href="{{ route('messaging.sms') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n">Send SMS</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('messaging.email') ? 'active' : '' }}">
-                    <a href="{{ route('messaging.email') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n">Send Email</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('messaging.services') ? 'active' : '' }}">
-                    <a href="{{ route('messaging.services') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n">Services</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Members -->
-        <li class="menu-item {{ request()->routeIs('members*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-group"></i>
-                <div class="text-truncate" data-i18n="Members">Members</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('members.all') ? 'active' : '' }}">
-                    <a href="{{ route('members.all') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="All Members">All Members</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('members.add') ? 'active' : '' }}">
-                    <a href="{{ route('members.add') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Add Member">Add Member</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('members.profiles') ? 'active' : '' }}">
-                    <a href="{{ route('members.profiles') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Member Profiles">Member Profiles</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('members.groups') ? 'active' : '' }}">
-                    <a href="{{ route('members.groups') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Member Groups">Member Groups</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('members.contributions') ? 'active' : '' }}">
-                    <a href="{{ route('members.contributions') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Contributions">Contributions</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('members.reports') ? 'active' : '' }}">
-                    <a href="{{ route('members.reports') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Member Reports">Member Reports</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Investment -->
-        <li class="menu-item {{ request()->routeIs('investment*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-trending-up"></i>
-                <div class="text-truncate" data-i18n="Investment">Investment</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('investment.view') ? 'active' : '' }}">
-                    <a href="{{ route('investment.view') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="View Investments">View Investments</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('investment.new') ? 'active' : '' }}">
-                    <a href="{{ route('investment.new') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="New Investment">New Investment</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('investment.plans') ? 'active' : '' }}">
-                    <a href="{{ route('investment.plans') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Investment Plans">Investment Plans</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('investment.returns') ? 'active' : '' }}">
-                    <a href="{{ route('investment.returns') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Returns / Profits">Returns / Profits</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('investment.history') ? 'active' : '' }}">
-                    <a href="{{ route('investment.history') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Investment History">Investment History</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('investment.reports') ? 'active' : '' }}">
-                    <a href="{{ route('investment.reports') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Reports">Reports</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Deposit / Savings -->
-        <li class="menu-item {{ request()->routeIs('savings*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-wallet"></i>
-                <div class="text-truncate" data-i18n="Deposit / Savings">Deposit / Savings</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('savings.deposit') ? 'active' : '' }}">
-                    <a href="{{ route('savings.deposit') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Make Deposit">Make Deposit</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('savings.accounts') ? 'active' : '' }}">
-                    <a href="{{ route('savings.accounts') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Savings Accounts">Savings Accounts</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('savings.history') ? 'active' : '' }}">
-                    <a href="{{ route('savings.history') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Transaction History">Transaction History</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('savings.withdrawal') ? 'active' : '' }}">
-                    <a href="{{ route('savings.withdrawal') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Withdrawal Requests">Withdrawal Requests</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('savings.reports') ? 'active' : '' }}">
-                    <a href="{{ route('savings.reports') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Savings Reports">Savings Reports</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Loans -->
-        <li class="menu-item {{ request()->routeIs('loans*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-dollar"></i>
-                <div class="text-truncate" data-i18n="Loans">Loans</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('loans.apply') ? 'active' : '' }}">
-                    <a href="{{ route('loans.apply') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Apply Loan">Apply Loan</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('loans.products') ? 'active' : '' }}">
-                    <a href="{{ route('loans.products') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Loan Products">Loan Products</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('loans.my') ? 'active' : '' }}">
-                    <a href="{{ route('loans.my') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="My Loans">My Loans</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('loans.repayments') ? 'active' : '' }}">
-                    <a href="{{ route('loans.repayments') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Repayments">Repayments</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('loans.schedule') ? 'active' : '' }}">
-                    <a href="{{ route('loans.schedule') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Loan Schedule">Loan Schedule</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('loans.reports') ? 'active' : '' }}">
-                    <a href="{{ route('loans.reports') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Loan Reports">Loan Reports</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Social Welfare Fund -->
-        <li class="menu-item {{ request()->routeIs('welfare*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-heart"></i>
-                <div class="text-truncate" data-i18n="Social Welfare Fund">Social Welfare Fund</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('welfare.contribute') ? 'active' : '' }}">
-                    <a href="{{ route('welfare.contribute') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Contribute">Contribute</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('welfare.balance') ? 'active' : '' }}">
-                    <a href="{{ route('welfare.balance') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Fund Balance">Fund Balance</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('welfare.support') ? 'active' : '' }}">
-                    <a href="{{ route('welfare.support') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Request Support">Request Support</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('welfare.history') ? 'active' : '' }}">
-                    <a href="{{ route('welfare.history') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Contributions History">Contributions History</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('welfare.reports') ? 'active' : '' }}">
-                    <a href="{{ route('welfare.reports') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Welfare Reports">Welfare Reports</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Shares -->
-        <li class="menu-item {{ request()->routeIs('shares*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-pie-chart"></i>
-                <div class="text-truncate" data-i18n="Shares">Shares</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('shares.buy') ? 'active' : '' }}">
-                    <a href="{{ route('shares.buy') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Buy Shares">Buy Shares</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('shares.my') ? 'active' : '' }}">
-                    <a href="{{ route('shares.my') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="My Shares">My Shares</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('shares.value') ? 'active' : '' }}">
-                    <a href="{{ route('shares.value') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Share Value">Share Value</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('shares.dividends') ? 'active' : '' }}">
-                    <a href="{{ route('shares.dividends') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Dividends">Dividends</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('shares.transfers') ? 'active' : '' }}">
-                    <a href="{{ route('shares.transfers') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Share Transfers">Share Transfers</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('shares.reports') ? 'active' : '' }}">
-                    <a href="{{ route('shares.reports') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Share Reports">Share Reports</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-            <!-- Account Settings -->
-      
-        <li class="menu-item {{ request()->routeIs('account-settings*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-dock-top"></i>
-                <div class="text-truncate" data-i18n="Account Settings">Account Settings</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('profile') ? 'active' : '' }}">
-                    <a href="{{ route('profile') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="My Profile">My Profile</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('account-settings.notifications') ? 'active' : '' }}">
-                    <a href="{{ route('account-settings.notifications') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Notifications">Notifications</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('security') ? 'active' : '' }}">
-                    <a href="{{ route('security') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Security">Security</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        </li>
-
-        <!-- System Settings -->
-        
-        <li class="menu-item {{ request()->routeIs('system-settings*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-cog"></i>
-                <div class="text-truncate" data-i18n="System Settings">System Settings</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ request()->routeIs('system-settings.general') ? 'active' : '' }}">
-                    <a href="{{ route('system-settings.general') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="General Settings">General Settings</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('system-settings.payment') ? 'active' : '' }}">
-                    <a href="{{ route('system-settings.payment') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Payment Settings">Payment Settings</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('system-settings.security') ? 'active' : '' }}">
-                    <a href="{{ route('system-settings.security') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Security Settings">Security Settings</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('system-settings.notification') ? 'active' : '' }}">
-                    <a href="{{ route('system-settings.notification') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Notification Settings">Notification Settings</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('system-settings.user') ? 'active' : '' }}">
-                    <a href="{{ route('system-settings.user') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="User Settings">User Settings</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('system-settings.integration') ? 'active' : '' }}">
-                    <a href="{{ route('system-settings.integration') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Integration Settings">Integration Settings</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('system-settings.maintenance') ? 'active' : '' }}">
-                    <a href="{{ route('system-settings.maintenance') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="System Maintenance">System Maintenance</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('system-settings.health') ? 'active' : '' }}">
-                    <a href="{{ route('system-settings.health') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="System Health">System Health</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('system-settings.audit') ? 'active' : '' }}">
-                    <a href="{{ route('system-settings.audit') }}" class="menu-link">
-                        <div class="text-truncate" data-i18n="Audit Trail">Audit Trail</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('system-settings.security*') ? 'active open' : '' }}">
+                <li class="menu-item {{ request()->routeIs('billing.payments') ? 'active open' : '' }}">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <div class="text-truncate" data-i18n="Security Center">Security Center</div>
+                        <div class="text-truncate">Payment Methods</div>
                     </a>
                     <ul class="menu-sub">
-                        <li class="menu-item {{ request()->routeIs('system-settings.security.authentication') ? 'active' : '' }}">
-                            <a href="{{ route('system-settings.security.authentication') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Advanced Authentication">Advanced Authentication</div>
+                        <li class="menu-item {{ request()->routeIs('billing.payments.mpesa') ? 'active' : '' }}">
+                            <a href="#" class="menu-link">
+                                <div class="text-truncate">M-Pesa</div>
                             </a>
                         </li>
-                        <li class="menu-item {{ request()->routeIs('system-settings.security.fraud') ? 'active' : '' }}">
-                            <a href="{{ route('system-settings.security.fraud') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Fraud Detection">Fraud Detection</div>
-                            </a>
-                        </li>
-                        <li class="menu-item {{ request()->routeIs('system-settings.security.access') ? 'active' : '' }}">
-                            <a href="{{ route('system-settings.security.access') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Access Control">Access Control</div>
-                            </a>
-                        </li>
-                        <li class="menu-item {{ request()->routeIs('system-settings.security.device') ? 'active' : '' }}">
-                            <a href="{{ route('system-settings.security.device') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="IP & Device Security">IP & Device Security</div>
-                            </a>
-                        </li>
-                        <li class="menu-item {{ request()->routeIs('system-settings.security.session') ? 'active' : '' }}">
-                            <a href="{{ route('system-settings.security.session') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Session Security">Session Security</div>
-                            </a>
-                        </li>
-                        <li class="menu-item {{ request()->routeIs('system-settings.security.protection') ? 'active' : '' }}">
-                            <a href="{{ route('system-settings.security.protection') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="System Protection">System Protection</div>
-                            </a>
-                        </li>
-                        <li class="menu-item {{ request()->routeIs('system-settings.security.alerts') ? 'active' : '' }}">
-                            <a href="{{ route('system-settings.security.alerts') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Security Alerts">Security Alerts</div>
-                            </a>
-                        </li>
-                        <li class="menu-item {{ request()->routeIs('system-settings.security.tracking') ? 'active' : '' }}">
-                            <a href="{{ route('system-settings.security.tracking') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Activity Tracking">Activity Tracking</div>
+                        <li class="menu-item {{ request()->routeIs('billing.payments.bank') ? 'active' : '' }}">
+                            <a href="#" class="menu-link">
+                                <div class="text-truncate">Bank Transfer</div>
                             </a>
                         </li>
                     </ul>
                 </li>
             </ul>
         </li>
+
+        <!-- System Section -->
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">System</span></li>
+        
+        <!-- Monitoring & Logs -->
+        <li class="menu-item {{ request()->routeIs('monitoring*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-bar-chart"></i>
+                <div class="text-truncate">Monitoring & Logs</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('monitoring.logs') ? 'active open' : '' }}">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <div class="text-truncate">Server Logs</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class="menu-item {{ request()->routeIs('monitoring.logs.website') ? 'active' : '' }}">
+                            <a href="#" class="menu-link">
+                                <div class="text-truncate">Website Logs</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('monitoring.logs.error') ? 'active' : '' }}">
+                            <a href="#" class="menu-link">
+                                <div class="text-truncate">Error Logs</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('monitoring.logs.access') ? 'active' : '' }}">
+                            <a href="#" class="menu-link">
+                                <div class="text-truncate">Access Logs</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="menu-item {{ request()->routeIs('monitoring.traffic') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Live Traffic Monitor</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('monitoring.alerts') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Alerts & Notifications</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Security Center -->
+        <li class="menu-item {{ request()->routeIs('security*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-shield"></i>
+                <div class="text-truncate">Security Center</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('security.firewall') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Firewall Rules</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('security.ip') ? 'active open' : '' }}">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <div class="text-truncate">IP Management</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class="menu-item {{ request()->routeIs('security.ip.whitelist') ? 'active' : '' }}">
+                            <a href="#" class="menu-link">
+                                <div class="text-truncate">IP Whitelist</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('security.ip.blacklist') ? 'active' : '' }}">
+                            <a href="#" class="menu-link">
+                                <div class="text-truncate">IP Blacklist</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="menu-item {{ request()->routeIs('security.ssl') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">SSL Status</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('security.malware') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Malware Scanner</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('security.backup') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Backup Security</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('security.activity') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Login Activity</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Backup & Restore -->
+        <li class="menu-item {{ request()->routeIs('backup*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-cloud-download"></i>
+                <div class="text-truncate">Backup & Restore</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('backup.settings') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Backup Settings</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('backup.manual') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Manual Backup</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('backup.scheduled') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Scheduled Backups</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('backup.restore') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Restore Backup</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('backup.storage') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Backup Storage</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Automation & Tools -->
+        <li class="menu-item {{ request()->routeIs('automation*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-bot"></i>
+                <div class="text-truncate">Automation & Tools</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('automation.cron') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Cron Jobs</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('automation.queue') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Queue Jobs</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('automation.scheduler') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Task Scheduler</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('automation.installer') ? 'active open' : '' }}">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <div class="text-truncate">One-Click Installer</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class="menu-item {{ request()->routeIs('automation.installer.wordpress') ? 'active' : '' }}">
+                            <a href="#" class="menu-link">
+                                <div class="text-truncate">WordPress</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('automation.installer.laravel') ? 'active' : '' }}">
+                            <a href="#" class="menu-link">
+                                <div class="text-truncate">Laravel</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('automation.installer.nodejs') ? 'active' : '' }}">
+                            <a href="#" class="menu-link">
+                                <div class="text-truncate">Node.js App</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+
+        <!-- API & Integrations -->
+        <li class="menu-item {{ request()->routeIs('api*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-plug"></i>
+                <div class="text-truncate">API & Integrations</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('api.keys') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">API Keys</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('api.webhooks') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Webhooks</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('api.cloudflare') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Cloudflare Integration</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('api.github') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">GitHub Integration</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('api.smtp') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">SMTP Settings</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- System Health -->
+        <li class="menu-item {{ request()->routeIs('health*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-heart"></i>
+                <div class="text-truncate">System Health</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('health.status') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">System Status</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('health.trends') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Resource Usage Trends</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('health.services') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Service Health Check</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('health.uptime') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Uptime Monitoring</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('health.optimization') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Performance Optimization</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Settings Section -->
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">Settings</span></li>
+        
+        <!-- System Settings -->
+        <li class="menu-item {{ request()->routeIs('system-settings*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-cog"></i>
+                <div class="text-truncate">System Settings</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('system-settings.general') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">General Settings</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('system-settings.company') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Company Info</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('system-settings.timezone') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Timezone & Locale</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('system-settings.email') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Email Configuration</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('system-settings.branding') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Branding</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('system-settings.updates') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">System Updates</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- User & Role Management -->
+        <li class="menu-item {{ request()->routeIs('users*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-user"></i>
+                <div class="text-truncate">User & Role Management</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('users.all') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Users</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('users.roles') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Roles & Permissions</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('users.activity') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Activity Logs</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('users.2fa') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Two-Factor Authentication</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Support & Helpdesk -->
+        <li class="menu-item {{ request()->routeIs('support*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-help-circle"></i>
+                <div class="text-truncate">Support & Helpdesk</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('support.tickets') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Support Tickets</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('support.open') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Open Ticket</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('support.knowledge') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">Knowledge Base</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('support.faq') ? 'active' : '' }}">
+                    <a href="#" class="menu-link">
+                        <div class="text-truncate">FAQs</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Logout -->
+        <li class="menu-item">
+            <a href="{{ route('logout') }}" class="menu-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="menu-icon tf-icons bx bx-log-out"></i>
+                <div class="text-truncate">Logout</div>
+            </a>
+        </li>
+
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
 
         </ul>
 </aside>

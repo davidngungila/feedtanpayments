@@ -4,6 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MessagingController;
+use App\Http\Controllers\ServerController;
+use App\Http\Controllers\DomainController;
+use App\Http\Controllers\HostingController;
+use App\Http\Controllers\EmailController;
+use App\Http\Controllers\DatabaseController;
+use App\Http\Controllers\FileManagerController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -18,12 +24,115 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Account Settings routes
-Route::get('/account-settings', [DashboardController::class, 'accountSettings'])->name('account-settings');
-Route::get('/account-settings/notifications', [DashboardController::class, 'notifications'])->name('account-settings.notifications');
-Route::get('/account-settings/connections', [DashboardController::class, 'connections'])->name('account-settings.connections');
+    // Profile and Settings routes
+    Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
+    Route::get('/account-settings', [DashboardController::class, 'accountSettings'])->name('account-settings');
+    Route::get('/security', [DashboardController::class, 'security'])->name('security');
 
-// Payment routes
+    // Server Management routes
+    Route::prefix('servers')->name('servers.')->group(function () {
+        Route::get('/', [ServerController::class, 'index'])->name('index');
+        Route::get('/create', [ServerController::class, 'create'])->name('create');
+        Route::post('/store', [ServerController::class, 'store'])->name('store');
+        Route::get('/{id}', [ServerController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [ServerController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [ServerController::class, 'update'])->name('update');
+        Route::get('/{id}/performance', [ServerController::class, 'performance'])->name('performance');
+        Route::get('/{id}/logs', [ServerController::class, 'logs'])->name('logs');
+        Route::delete('/{id}', [ServerController::class, 'destroy'])->name('destroy');
+        
+        // Server Management Sub-pages
+        Route::get('/monitoring', [ServerController::class, 'monitoring'])->name('monitoring');
+        Route::get('/services', [ServerController::class, 'services'])->name('services');
+        Route::get('/webserver', [ServerController::class, 'webserver'])->name('webserver');
+        Route::get('/database', [ServerController::class, 'database'])->name('database');
+        Route::get('/phpfpm', [ServerController::class, 'phpfpm'])->name('phpfpm');
+        Route::get('/ssh', [ServerController::class, 'ssh'])->name('ssh');
+        Route::get('/firewall', [ServerController::class, 'firewall'])->name('firewall');
+        Route::get('/fail2ban', [ServerController::class, 'fail2ban'])->name('fail2ban');
+    });
+
+    // File Manager routes
+    Route::prefix('filemanager')->name('filemanager.')->group(function () {
+        Route::get('/', [FileManagerController::class, 'index'])->name('index');
+        Route::get('/git-deployment', [FileManagerController::class, 'gitDeployment'])->name('git-deployment');
+        Route::get('/environment-settings', [FileManagerController::class, 'environmentSettings'])->name('environment-settings');
+        Route::get('/php-versions', [FileManagerController::class, 'phpVersions'])->name('php-versions');
+        Route::get('/staging-environment', [FileManagerController::class, 'stagingEnvironment'])->name('staging-environment');
+    });
+
+    // Domain & DNS Management routes
+    Route::prefix('domains')->name('domains.')->group(function () {
+        Route::get('/', [DomainController::class, 'index'])->name('index');
+        Route::get('/create', [DomainController::class, 'create'])->name('create');
+        Route::post('/store', [DomainController::class, 'store'])->name('store');
+        Route::get('/{id}', [DomainController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [DomainController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [DomainController::class, 'update'])->name('update');
+        Route::get('/{id}/dns', [DomainController::class, 'dns'])->name('dns');
+        Route::get('/{id}/ssl', [DomainController::class, 'ssl'])->name('ssl');
+        Route::delete('/{id}', [DomainController::class, 'destroy'])->name('destroy');
+        
+        // DNS Management Sub-pages
+        Route::get('/dns-management', [DomainController::class, 'dnsManagement'])->name('dns-management');
+        Route::get('/a-records', [DomainController::class, 'aRecords'])->name('a-records');
+        Route::get('/cname-records', [DomainController::class, 'cnameRecords'])->name('cname-records');
+        Route::get('/mx-records', [DomainController::class, 'mxRecords'])->name('mx-records');
+        Route::get('/nameservers', [DomainController::class, 'nameservers'])->name('nameservers');
+        Route::get('/ssl-certificates', [DomainController::class, 'sslCertificates'])->name('ssl-certificates');
+    });
+
+    // Website Hosting routes
+    Route::prefix('hosting')->name('hosting.')->group(function () {
+        Route::get('/', [HostingController::class, 'index'])->name('index');
+        Route::get('/create', [HostingController::class, 'create'])->name('create');
+        Route::post('/store', [HostingController::class, 'store'])->name('store');
+        Route::get('/{id}', [HostingController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [HostingController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [HostingController::class, 'update'])->name('update');
+        Route::get('/{id}/analytics', [HostingController::class, 'analytics'])->name('analytics');
+        Route::get('/{id}/files', [HostingController::class, 'files'])->name('files');
+        Route::get('/{id}/databases', [HostingController::class, 'databases'])->name('databases');
+        Route::get('/{id}/emails', [HostingController::class, 'emails'])->name('emails');
+        Route::delete('/{id}', [HostingController::class, 'destroy'])->name('destroy');
+    });
+
+    // Email Management routes
+    Route::prefix('email')->name('email.')->group(function () {
+        Route::get('/', [EmailController::class, 'index'])->name('index');
+        Route::get('/create', [EmailController::class, 'createEmail'])->name('create');
+        Route::post('/store', [EmailController::class, 'store'])->name('store');
+        Route::get('/{id}', [EmailController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [EmailController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [EmailController::class, 'update'])->name('update');
+        Route::get('/{id}/webmail', [EmailController::class, 'webmail'])->name('webmail');
+        Route::get('/{id}/forwarding', [EmailController::class, 'forwarding'])->name('forwarding');
+        Route::get('/{id}/auto-responder', [EmailController::class, 'autoResponder'])->name('auto-responder');
+        Route::get('/spam-filter', [EmailController::class, 'spamFilter'])->name('spam-filter');
+        Route::get('/forwarders', [EmailController::class, 'forwarders'])->name('forwarders');
+        Route::get('/auto-responders', [EmailController::class, 'autoResponders'])->name('auto-responders');
+        Route::get('/webmail-access', [EmailController::class, 'webmailAccess'])->name('webmail-access');
+        Route::delete('/{id}', [EmailController::class, 'destroy'])->name('destroy');
+    });
+
+    // Database Management routes
+    Route::prefix('database')->name('database.')->group(function () {
+        Route::get('/', [DatabaseController::class, 'index'])->name('index');
+        Route::get('/create', [DatabaseController::class, 'createDatabase'])->name('create');
+        Route::post('/store', [DatabaseController::class, 'store'])->name('store');
+        Route::get('/{id}', [DatabaseController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [DatabaseController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [DatabaseController::class, 'update'])->name('update');
+        Route::delete('/{id}', [DatabaseController::class, 'destroy'])->name('destroy');
+        Route::get('/users', [DatabaseController::class, 'databaseUsers'])->name('users');
+        Route::get('/remote-access', [DatabaseController::class, 'remoteAccess'])->name('remote-access');
+        Route::get('/phpmyadmin', [DatabaseController::class, 'phpMyAdmin'])->name('phpmyadmin');
+        Route::get('/{id}/query', [DatabaseController::class, 'query'])->name('query');
+        Route::get('/{id}/backup', [DatabaseController::class, 'backup'])->name('backup');
+        Route::get('/{id}/performance', [DatabaseController::class, 'performance'])->name('performance');
+    });
+
+    // Payment routes
 Route::get('/payments/initiate', [DashboardController::class, 'initiatePayment'])->name('payments.initiate');
 Route::get('/payments/history', [DashboardController::class, 'paymentHistory'])->name('payments.history');
 
@@ -49,6 +158,30 @@ Route::prefix('members')->name('members.')->group(function () {
     Route::get('/contributions', [DashboardController::class, 'membersContributions'])->name('contributions');
     Route::get('/reports', [DashboardController::class, 'membersReports'])->name('reports');
 });
+
+// Client Management routes
+Route::prefix('clients')->name('clients.')->group(function () {
+    Route::get('/', [ClientController::class, 'index'])->name('index');
+    Route::get('/create', [ClientController::class, 'create'])->name('create');
+    Route::post('/store', [ClientController::class, 'store'])->name('store');
+    Route::get('/{client}', [ClientController::class, 'show'])->name('show');
+    Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
+    Route::put('/{client}', [ClientController::class, 'update'])->name('update');
+    Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
+    Route::get('/packages', [ClientController::class, 'clientPackages'])->name('packages');
+    Route::get('/resource-limits', [ClientController::class, 'resourceLimits'])->name('resource-limits');
+    Route::get('/disk-space', [ClientController::class, 'diskSpace'])->name('disk-space');
+    Route::get('/bandwidth', [ClientController::class, 'bandwidth'])->name('bandwidth');
+    Route::get('/domains-limit', [ClientController::class, 'domainsLimit'])->name('domains-limit');
+    Route::get('/login-access', [ClientController::class, 'clientLoginAccess'])->name('login-access');
+});
+
+// Client switching API routes
+Route::get('/api/clients/dropdown', [ClientController::class, 'getClientsForDropdown'])->name('api.clients.dropdown');
+Route::post('/api/clients/switch', [ClientController::class, 'switchClient'])->name('api.clients.switch');
+Route::get('/api/clients/current', [ClientController::class, 'getCurrentClient'])->name('api.clients.current');
+Route::post('/api/clients/clear', [ClientController::class, 'clearClient'])->name('api.clients.clear');
+Route::get('/api/clients/search', [ClientController::class, 'searchClients'])->name('api.clients.search');
 
 
 // Investment routes
@@ -179,9 +312,17 @@ Route::prefix('messaging')->middleware(['auth'])->group(function () {
 
 // Other routes
 Route::get('/forgot-password', [DashboardController::class, 'forgotPassword'])->name('forgot-password');
-Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
+Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
 Route::put('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
 Route::get('/security', [DashboardController::class, 'security'])->name('security');
+
+// Profile API routes
+Route::get('/api/profile', [ProfileController::class, 'getProfile'])->name('api.profile.get');
+Route::post('/api/profile/update', [ProfileController::class, 'update'])->name('api.profile.update');
+Route::post('/api/profile/upload-avatar', [ProfileController::class, 'uploadAvatar'])->name('api.profile.upload-avatar');
+Route::delete('/api/profile/delete-avatar', [ProfileController::class, 'deleteAvatar'])->name('api.profile.delete-avatar');
+Route::post('/api/change-password', [ProfileController::class, 'changePassword'])->name('api.change-password');
+Route::get('/api/download-user-data', [ProfileController::class, 'downloadUserData'])->name('api.download-user-data');
 
 // API route for getting user role
 Route::get('/api/user-role', [AuthController::class, 'getUserRole'])->middleware('auth');

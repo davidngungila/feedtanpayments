@@ -11,10 +11,20 @@ class DashboardController extends Controller
         return view('dashboard');
     }
     
+    public function profile()
+    {
+        return view('profile');
+    }
+    
     // Account Settings
     public function accountSettings()
     {
         return view('account-settings');
+    }
+    
+    public function security()
+    {
+        return view('security');
     }
     
     public function notifications()
@@ -87,12 +97,6 @@ class DashboardController extends Controller
         return view('auth.forgot-password');
     }
     
-    public function profile()
-    {
-        $user = auth()->user();
-        return view('auth.profile', compact('user'));
-    }
-    
     public function updateProfile(Request $request)
     {
         $user = auth()->user();
@@ -107,11 +111,6 @@ class DashboardController extends Controller
         $user->update($validated);
         
         return redirect()->route('profile')->with('success', 'Profile updated successfully!');
-    }
-    
-    public function security()
-    {
-        return view('auth.security');
     }
 
     // System Settings Methods
@@ -566,5 +565,10 @@ class DashboardController extends Controller
     public function integrationPaymentApi()
     {
         return view('system-settings.integrations.payment-api');
+    }
+
+    public function systemSecurityLogs()
+    {
+        return view('system-settings.security-logs');
     }
 }
