@@ -316,6 +316,74 @@ class MessagingController extends Controller
     }
 
     /**
+     * Get email message details.
+     */
+    public function getEmailMessage($messageId)
+    {
+        $message = EmailMessage::with('messagingService', 'user')->findOrFail($messageId);
+        
+        return response()->json([
+            'success' => true,
+            'message_id' => $message->message_id,
+            'from_email' => $message->from_email,
+            'from_name' => $message->from_name,
+            'to_email' => $message->to_email,
+            'to_name' => $message->to_name,
+            'subject' => $message->subject,
+            'status_name' => $message->status_name,
+            'status_description' => $message->status_description,
+            'sent_at' => $message->sent_at,
+            'failed_at' => $message->failed_at,
+            'created_at' => $message->created_at,
+            'service' => [
+                'name' => $message->messagingService->name,
+                'type' => $message->messagingService->type
+            ],
+            'user' => $message->user ? [
+                'name' => $message->user->name,
+                'email' => $message->user->email
+            ] : null,
+            'custom_data' => json_decode($message->custom_data, true)
+        ]);
+    }
+
+    /**
+     * Get email message content.
+     */
+    public function getEmailMessageContent($messageId)
+    {
+        $message = EmailMessage::findOrFail($messageId);
+        
+        return response()->json([
+            'success' => true,
+            'subject' => $message->subject,
+            'body_html' => $message->body_html,
+            'body_text' => $message->body_text,
+            'from_email' => $message->from_email,
+            'from_name' => $message->from_name,
+            'to_email' => $message->to_email,
+            'to_name' => $message->to_name
+        ]);
+    }
+
+    /**
+     * Export email message.
+     */
+    public function exportEmailMessage($messageId)
+    {
+        $message = EmailMessage::with('messagingService', 'user')->findOrFail($messageId);
+        
+        $csvContent = "Message ID,From Email,From Name,To Email,To Name,Subject,Status,Sent At,Created At\n";
+        $csvContent .= "{$message->message_id},{$message->from_email},{$message->from_name},{$message->to_email},{$message->to_name},{$message->subject},{$message->status_name},{$message->sent_at},{$message->created_at}\n";
+        
+        $filename = "email_message_{$message->message_id}_" . date('Y-m-d_H-i-s') . ".csv";
+        
+        return response($csvContent)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+    }
+
+    /**
      * Display services management page.
      */
     public function servicesIndex()

@@ -411,8 +411,8 @@ document.getElementById('email_template_id').addEventListener('change', function
     }
 });
 
-// Preview email template
-function previewEmailTemplate() {
+// Preview email template - make globally accessible
+window.previewEmailTemplate = function() {
     const templateId = document.getElementById('email_template_id').value;
     
     if (!templateId) {
@@ -534,10 +534,10 @@ document.getElementById('email_schedule_later').addEventListener('change', funct
 // Form submission
 document.getElementById('emailForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
-    const formData = {
+    sendEmail();
+});
 
-function sendEmail() {
+window.sendEmail = function() {
     const formData = new FormData(document.getElementById('emailForm'));
     
     // Prepare variables for template processing
@@ -594,10 +594,15 @@ function sendEmail() {
     });
 }
 
-function viewEmailMessage(messageId) {
+window.viewEmailMessage = function(messageId) {
     fetch(`/api/email-messages/${messageId}`)
         .then(response => response.json())
         .then(data => {
+            if (!data.success) {
+                showNotification('Error loading message details', 'error');
+                return;
+            }
+            
             const content = `
                 <div class="row">
                     <div class="col-md-6">
@@ -606,12 +611,20 @@ function viewEmailMessage(messageId) {
                             <div class="fw-bold">${data.message_id}</div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">From</label>
-                            <div>${data.getFullSender()}</div>
+                            <label class="form-label">From Email</label>
+                            <div>${data.from_email}</div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">To</label>
-                            <div>${data.getFullRecipient()}</div>
+                            <label class="form-label">From Name</label>
+                            <div>${data.from_name || 'N/A'}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">To Email</label>
+                            <div>${data.to_email}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">To Name</label>
+                            <div>${data.to_name || 'N/A'}</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Subject</label>
@@ -619,56 +632,42 @@ function viewEmailMessage(messageId) {
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Service</label>
-                            <div>${data.messagingService?.name || 'N/A'}</div>
+                            <div>${data.service?.name || 'N/A'}</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Status</label>
-                            <div><span class="badge bg-${data.getStatusBadgeColor()}">${data.status_name}</span></div>
+                            <div><span class="badge bg-success">${data.status_name}</span></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Engagement</label>
-                            <div>
-                                ${data.isOpened() ? '<span class="badge bg-success">Opened</span> ' + data.opened_at?.diffForHumans() : '<span class="badge bg-secondary">Not opened</span>'}
-                                ${data.isClicked() ? '<span class="badge bg-info ms-1">Clicked</span>' : ''}
-                                ${data.isBounced() ? '<span class="badge bg-danger ms-1">Bounced</span>' : ''}
-                            </div>
+                            <label class="form-label">Status Description</label>
+                            <div>${data.status_description || 'N/A'}</div>
                         </div>
-                        ${data.cc && data.cc.length > 0 ? `
                         <div class="mb-3">
-                            <label class="form-label">CC</label>
-                            <div>${data.cc.join(', ')}</div>
+                            <label class="form-label">Sent At</label>
+                            <div>${data.sent_at ? new Date(data.sent_at).toLocaleString() : 'Not sent'}</div>
                         </div>
-                        ` : ''}
-                        ${data.bcc && data.bcc.length > 0 ? `
                         <div class="mb-3">
-                            <label class="form-label">BCC</label>
-                            <div>${data.bcc.join(', ')}</div>
-                        </div>
-                        ` : ''}
-                        <div class="mb-3">
-                            <label class="form-label">Created</label>
+                            <label class="form-label">Created At</label>
                             <div>${new Date(data.created_at).toLocaleString()}</div>
                         </div>
-                        ${data.sent_at ? `
                         <div class="mb-3">
-                            <label class="form-label">Sent</label>
-                            <div>${new Date(data.sent_at).toLocaleString()}</div>
+                            <label class="form-label">User</label>
+                            <div>${data.user ? data.user.name : 'System'}</div>
                         </div>
-                        ` : ''}
-                        ${data.opened_at ? `
+                        ${data.failed_at ? `
                         <div class="mb-3">
-                            <label class="form-label">Opened</label>
-                            <div>${new Date(data.opened_at).toLocaleString()}</div>
+                            <label class="form-label">Failed At</label>
+                            <div class="text-danger">${new Date(data.failed_at).toLocaleString()}</div>
                         </div>
                         ` : ''}
                     </div>
                 </div>
-                ${data.error_message ? `
+                ${data.status_description && data.status_name === 'failed' ? `
                 <div class="mb-3">
                     <label class="form-label">Error Message</label>
-                    <div class="text-danger">${data.error_message}</div>
+                    <div class="text-danger">${data.status_description}</div>
                 </div>
                 ` : ''}
                 <div class="mb-3">
@@ -686,7 +685,7 @@ function viewEmailMessage(messageId) {
         });
 }
 
-function viewEmailContent(messageId) {
+window.viewEmailContent = function(messageId) {
     fetch(`/api/email-messages/${messageId}/content`)
         .then(response => response.json())
         .then(data => {
@@ -733,7 +732,7 @@ function retryEmail(messageId) {
     }
 }
 
-function exportEmail(messageId) {
+window.exportEmail = function(messageId) {
     window.open(`/api/email-messages/${messageId}/export`, '_blank');
 }
 

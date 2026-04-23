@@ -200,4 +200,9 @@ Route::get('/api/sms-balance', [MessagingController::class, 'getSmsBalance'])->m
 // API routes for email templates
 Route::post('/api/email-template/preview', [MessagingController::class, 'previewEmailTemplate'])->middleware('auth');
 Route::get('/api/email-template/{id}', [MessagingController::class, 'getEmailTemplate'])->middleware('auth');
+
+// API routes for email messages
+Route::get('/api/email-messages/{messageId}', [MessagingController::class, 'getEmailMessage'])->middleware('auth');
+Route::get('/api/email-messages/{messageId}/content', [MessagingController::class, 'getEmailMessageContent'])->middleware('auth');
+Route::get('/api/email-messages/{messageId}/export', [MessagingController::class, 'exportEmailMessage'])->middleware('auth');
 });
