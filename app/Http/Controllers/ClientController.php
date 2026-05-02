@@ -458,6 +458,20 @@ class ClientController extends Controller
     {
         $clients = Client::orderBy('name')->get();
         
+        // Generate login logs
+        $loginLogs = [];
+        for ($i = 0; $i < 20; $i++) {
+            $randomClient = $clients->random();
+            $loginLogs[] = [
+                'client_name' => $randomClient->name,
+                'username' => strtolower(str_replace(' ', '', $randomClient->name)) . '_' . $randomClient->id,
+                'ip' => rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255),
+                'time' => now()->subMinutes(rand(1, 1440))->format('Y-m-d H:i:s'),
+                'status' => rand(0, 1) ? 'success' : 'failed',
+                'details' => rand(0, 1) ? 'Login successful' : 'Invalid password'
+            ];
+        }
+
         $loginData = [
             'total_logins_24h' => rand(100, 500),
             'failed_logins_24h' => rand(5, 25),
@@ -489,7 +503,8 @@ class ClientController extends Controller
 
         return view('clients.login-access', [
             'clients' => $loginData['clients'],
-            'loginData' => $loginData
+            'loginData' => $loginData,
+            'loginLogs' => $loginLogs
         ]);
     }
 }
