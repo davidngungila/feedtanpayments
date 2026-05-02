@@ -485,6 +485,9 @@ class ClientController extends Controller
             })
         ];
 
-        return view('clients.login-access', compact('clients', 'loginData'));
+        return view('clients.login-access', [
+            'clients' => $loginData['clients'],
+            'loginData' => $loginData
+        ]);
     }
 }
