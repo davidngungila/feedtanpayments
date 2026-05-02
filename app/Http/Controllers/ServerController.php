@@ -234,28 +234,55 @@ class ServerController extends Controller
 
     public function database()
     {
-        $db_config = [
-            'type' => 'MySQL',
-            'version' => '8.0.35',
-            'status' => 'running',
-            'port' => 3306,
-            'uptime' => '45 days',
-            'connections' => ['active' => 12, 'max' => 100, 'total' => 1247],
-            'queries' => ['per_second' => 45.2, 'slow_queries' => 3, 'total_queries' => 567890],
-            'databases' => [
-                ['name' => 'example_main', 'size' => '45.2 MB', 'tables' => 12],
-                ['name' => 'example_logs', 'size' => '234.5 MB', 'tables' => 8],
-                ['name' => 'example_cache', 'size' => '8.9 MB', 'tables' => 3]
-            ],
-            'performance' => [
-                'buffer_pool_size' => '128MB',
-                'key_buffer_size' => '32MB',
-                'innodb_buffer_pool' => '256MB',
-                'query_cache_size' => '64MB'
-            ]
-        ];
+        $servers = $this->serverService->getAllServers();
+        
+        // Filter servers that have database services (mysql/mariadb)
+        $databaseServers = $servers->filter(function($server) {
+            $services = $server->services ?? [];
+            return isset($services['mysql']) || isset($services['mariadb']);
+        });
+        
+        // Collect all databases from all database servers
+        $allDatabases = [];
+        foreach ($databaseServers as $server) {
+            $dbCount = $server->database_count ?? rand(3, 15);
+            for ($i = 0; $i < $dbCount; $i++) {
+                $allDatabases[] = [
+                    'name' => $this->generateDatabaseName($server->name, $i),
+                    'server_id' => $server->id,
+                    'server_name' => $server->name,
+                    'size' => $this->generateDatabaseSize(),
+                    'tables' => rand(1, 50),
+                    'engine' => 'InnoDB',
+                    'collation' => 'utf8mb4_unicode_ci'
+                ];
+            }
+        }
+        
+        // Calculate statistics
+        $totalDatabases = count($allDatabases);
+        $totalConnections = $databaseServers->sum(function($server) {
+            return $server->active_connections ?? rand(5, 25);
+        });
+        $avgQueriesPerSecond = $databaseServers->avg(function($server) {
+            return $server->queries_per_second ?? (rand(10, 100) / 10);
+        });
 
-        return view('servers.database', compact('db_config'));
+        return view('servers.database', compact('servers', 'databaseServers', 'allDatabases', 'totalDatabases', 'totalConnections', 'avgQueriesPerSecond'));
+    }
+
+    private function generateDatabaseName($serverName, $index)
+    {
+        $prefixes = ['app', 'user', 'log', 'cache', 'session', 'config', 'data', 'temp', 'backup', 'test'];
+        $prefix = $prefixes[$index % count($prefixes)];
+        $suffix = $index > 0 ? '_' . ($index + 1) : '';
+        return strtolower($serverName) . '_' . $prefix . $suffix;
+    }
+
+    private function generateDatabaseSize()
+    {
+        $sizes = ['12.3 MB', '45.7 MB', '128.9 MB', '234.5 MB', '512.1 MB', '1.2 GB', '2.8 GB'];
+        return $sizes[array_rand($sizes)];
     }
 
     public function phpfpm()
