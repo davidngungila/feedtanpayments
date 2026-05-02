@@ -435,6 +435,8 @@ class ClientController extends Controller
             'clients' => $clients->map(function ($client) {
                 $domainsUsed = rand(1, 10);
                 $domainsLimit = rand(5, 50);
+                // Ensure domains_limit is never zero to prevent division by zero
+                $domainsLimit = max($domainsLimit, 1);
                 return [
                     'id' => $client->id,
                     'name' => $client->name,
@@ -448,7 +450,10 @@ class ClientController extends Controller
             })
         ];
 
-        return view('clients.domains-limit', compact('clients', 'domainsData'));
+        return view('clients.domains-limit', [
+            'clients' => $domainsData['clients'],
+            'domainsData' => $domainsData
+        ]);
     }
 
     /**
