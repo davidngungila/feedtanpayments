@@ -473,6 +473,7 @@ class ClientController extends Controller
                     'id' => $client->id,
                     'name' => $client->name,
                     'email' => $client->email,
+                    'username' => strtolower(str_replace(' ', '', $client->name)) . '_' . $client->id,
                     'status' => $client->status,
                     'last_login' => now()->subMinutes(rand(1, 1440))->format('Y-m-d H:i:s'),
                     'login_count_24h' => rand(0, 20),
