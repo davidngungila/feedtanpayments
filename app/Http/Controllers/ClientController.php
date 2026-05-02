@@ -504,8 +504,10 @@ class ClientController extends Controller
                     $status = rand(0, 1) ? 'active' : (rand(0, 1) ? 'suspended' : 'pending');
                     $domains[] = [
                         'id' => $i + 1,
+                        'name' => strtolower(str_replace(' ', '', $client->name)) . ($i > 0 ? $i + 1 : '') . '.com',
                         'domain' => strtolower(str_replace(' ', '', $client->name)) . ($i > 0 ? $i + 1 : '') . '.com',
                         'status' => $status,
+                        'created' => now()->subDays(rand(1, 365))->format('Y-m-d'),
                         'created_at' => now()->subDays(rand(1, 365))->format('Y-m-d'),
                         'expires_at' => now()->addDays(rand(30, 365))->format('Y-m-d')
                     ];
