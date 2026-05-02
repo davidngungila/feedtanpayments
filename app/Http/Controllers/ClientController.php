@@ -483,6 +483,20 @@ class ClientController extends Controller
                 $domainsLimit = rand(5, 50);
                 // Ensure domains_limit is never zero to prevent division by zero
                 $domainsLimit = max($domainsLimit, 1);
+                
+                // Generate domains array with status
+                $domains = [];
+                for ($i = 0; $i < $domainsUsed; $i++) {
+                    $status = rand(0, 1) ? 'active' : (rand(0, 1) ? 'suspended' : 'pending');
+                    $domains[] = [
+                        'id' => $i + 1,
+                        'domain' => strtolower(str_replace(' ', '', $client->name)) . ($i > 0 ? $i + 1 : '') . '.com',
+                        'status' => $status,
+                        'created_at' => now()->subDays(rand(1, 365))->format('Y-m-d'),
+                        'expires_at' => now()->addDays(rand(30, 365))->format('Y-m-d')
+                    ];
+                }
+                
                 return [
                     'id' => $client->id,
                     'name' => $client->name,
@@ -491,7 +505,8 @@ class ClientController extends Controller
                     'domains_used' => $domainsUsed,
                     'domains_limit' => $domainsLimit,
                     'usage_percentage' => ($domainsUsed / $domainsLimit) * 100,
-                    'primary_domain' => strtolower(str_replace(' ', '', $client->name)) . '.com'
+                    'primary_domain' => strtolower(str_replace(' ', '', $client->name)) . '.com',
+                    'domains' => $domains
                 ];
             })
         ];
