@@ -2,99 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Server;
+use App\Services\ServerManagementService;
 use Illuminate\Http\Request;
 
 class ServerController extends Controller
 {
+    protected $serverService;
+
+    public function __construct(ServerManagementService $serverService)
+    {
+        $this->serverService = $serverService;
+    }
+
     public function index()
     {
-        $servers = [
-            [
-                'id' => 1,
-                'name' => 'web-server-01',
-                'ip_address' => '192.168.1.10',
-                'status' => 'online',
-                'cpu_usage' => 45.2,
-                'memory_usage' => 68.5,
-                'disk_usage' => 72.1,
-                'uptime' => '45 days, 12 hours',
-                'os' => 'Ubuntu 22.04 LTS',
-                'type' => 'Web Server',
-                'location' => 'Data Center 1',
-                'last_backup' => '2024-12-22 02:00:00'
-            ],
-            [
-                'id' => 2,
-                'name' => 'app-server-02',
-                'ip_address' => '192.168.1.11',
-                'status' => 'online',
-                'cpu_usage' => 32.8,
-                'memory_usage' => 54.3,
-                'disk_usage' => 45.7,
-                'uptime' => '12 days, 8 hours',
-                'os' => 'CentOS 8',
-                'type' => 'Application Server',
-                'location' => 'Data Center 1',
-                'last_backup' => '2024-12-22 02:00:00'
-            ],
-            [
-                'id' => 3,
-                'name' => 'db-server-03',
-                'ip_address' => '192.168.1.12',
-                'status' => 'online',
-                'cpu_usage' => 58.9,
-                'memory_usage' => 76.2,
-                'disk_usage' => 82.4,
-                'uptime' => '67 days, 3 hours',
-                'os' => 'Ubuntu 22.04 LTS',
-                'type' => 'Database Server',
-                'location' => 'Data Center 2',
-                'last_backup' => '2024-12-22 03:00:00'
-            ],
-            [
-                'id' => 4,
-                'name' => 'mail-server-04',
-                'ip_address' => '192.168.1.13',
-                'status' => 'online',
-                'cpu_usage' => 28.4,
-                'memory_usage' => 41.7,
-                'disk_usage' => 35.2,
-                'uptime' => '123 days, 15 hours',
-                'os' => 'Debian 11',
-                'type' => 'Mail Server',
-                'location' => 'Data Center 2',
-                'last_backup' => '2024-12-22 01:00:00'
-            ],
-            [
-                'id' => 5,
-                'name' => 'backup-server-05',
-                'ip_address' => '192.168.1.14',
-                'status' => 'online',
-                'cpu_usage' => 15.3,
-                'memory_usage' => 28.9,
-                'disk_usage' => 91.8,
-                'uptime' => '234 days, 6 hours',
-                'os' => 'Ubuntu 20.04 LTS',
-                'type' => 'Backup Server',
-                'location' => 'Data Center 3',
-                'last_backup' => '2024-12-22 04:00:00'
-            ],
-            [
-                'id' => 6,
-                'name' => 'test-server-06',
-                'ip_address' => '192.168.1.15',
-                'status' => 'offline',
-                'cpu_usage' => 0,
-                'memory_usage' => 0,
-                'disk_usage' => 0,
-                'uptime' => '0 days, 0 hours',
-                'os' => 'Ubuntu 22.04 LTS',
-                'type' => 'Test Server',
-                'location' => 'Data Center 1',
-                'last_backup' => '2024-12-20 02:00:00'
-            ]
-        ];
-
+        $servers = $this->serverService->getAllServers();
         return view('servers.index', compact('servers'));
     }
 
@@ -103,132 +26,168 @@ class ServerController extends Controller
         return view('servers.create');
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'hostname' => 'required|string|max:255',
+            'ip_address' => 'required|ip',
+            'os_type' => 'nullable|string|max:50',
+            'os_version' => 'nullable|string|max:50',
+            'cpu_cores' => 'nullable|string|max:50',
+            'memory' => 'nullable|string|max:50',
+            'disk_space' => 'nullable|string|max:50',
+            'location' => 'nullable|string|max:255',
+            'notes' => 'nullable|string'
+        ]);
+
+        $server = $this->serverService->createServer($validated);
+        return redirect()->route('servers.index')->with('success', 'Server created successfully!');
+    }
+
     public function show($id)
     {
-        $server = [
-            'id' => $id,
-            'name' => 'web-server-01',
-            'ip_address' => '192.168.1.10',
-            'status' => 'online',
-            'cpu_usage' => 45.2,
-            'memory_usage' => 68.5,
-            'disk_usage' => 72.1,
-            'uptime' => '45 days, 12 hours',
-            'os' => 'Ubuntu 22.04 LTS',
-            'type' => 'Web Server',
-            'location' => 'Data Center 1',
-            'last_backup' => '2024-12-22 02:00:00',
-            'specs' => [
-                'cpu' => 'Intel Xeon E5-2680 v4',
-                'cores' => 8,
-                'threads' => 16,
-                'memory' => '32GB DDR4',
-                'storage' => '1TB SSD',
-                'network' => '1Gbps'
-            ],
-            'services' => [
-                ['name' => 'Apache', 'status' => 'running', 'port' => 80],
-                ['name' => 'MySQL', 'status' => 'running', 'port' => 3306],
-                ['name' => 'PHP', 'status' => 'running', 'port' => null],
-                ['name' => 'SSH', 'status' => 'running', 'port' => 22],
-                ['name' => 'FTP', 'status' => 'stopped', 'port' => 21]
-            ],
-            'logs' => [
-                ['timestamp' => '2024-12-22 14:30:00', 'level' => 'info', 'message' => 'System backup completed successfully'],
-                ['timestamp' => '2024-12-22 14:15:00', 'level' => 'warning', 'message' => 'High memory usage detected: 85%'],
-                ['timestamp' => '2024-12-22 14:00:00', 'level' => 'info', 'message' => 'Apache service restarted'],
-                ['timestamp' => '2024-12-22 13:45:00', 'level' => 'error', 'message' => 'Failed to connect to database'],
-                ['timestamp' => '2024-12-22 13:30:00', 'level' => 'info', 'message' => 'Security scan completed']
-            ]
-        ];
-
-        return view('servers.show', compact('server'));
+        $server = $this->serverService->getServer($id);
+        $monitoringData = $this->serverService->getServerMonitoringData($id);
+        
+        return view('servers.show', compact('server', 'monitoringData'));
     }
 
     public function edit($id)
     {
-        $server = [
-            'id' => $id,
-            'name' => 'web-server-01',
-            'ip_address' => '192.168.1.10',
-            'os' => 'Ubuntu 22.04 LTS',
-            'type' => 'Web Server',
-            'location' => 'Data Center 1',
-            'description' => 'Primary web server for production websites',
-            'backup_enabled' => true,
-            'monitoring_enabled' => true,
-            'auto_updates' => false
-        ];
-
+        $server = $this->serverService->getServer($id);
         return view('servers.edit', compact('server'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'hostname' => 'required|string|max:255',
+            'ip_address' => 'required|ip',
+            'os_type' => 'nullable|string|max:50',
+            'os_version' => 'nullable|string|max:50',
+            'cpu_cores' => 'nullable|string|max:50',
+            'memory' => 'nullable|string|max:50',
+            'disk_space' => 'nullable|string|max:50',
+            'location' => 'nullable|string|max:255',
+            'notes' => 'nullable|string'
+        ]);
+
+        $server = $this->serverService->updateServer($id, $validated);
+        return redirect()->route('servers.index')->with('success', 'Server updated successfully!');
+    }
+
+    public function destroy($id)
+    {
+        $this->serverService->deleteServer($id);
+        return redirect()->route('servers.index')->with('success', 'Server deleted successfully!');
     }
 
     public function performance($id)
     {
-        $server = [
-            'id' => $id,
-            'name' => 'web-server-01',
+        $server = $this->serverService->getServer($id);
+        $monitoringData = $this->serverService->getServerMonitoringData($id);
+        
+        // Generate mock historical data for charts
+        $performanceData = [
             'cpu_history' => [45, 48, 42, 50, 47, 45, 43, 46, 44, 45],
             'memory_history' => [68, 70, 65, 72, 69, 68, 66, 67, 68, 68],
             'disk_history' => [72, 72, 73, 72, 72, 71, 72, 72, 72, 72],
             'network_history' => [120, 150, 180, 140, 160, 130, 170, 145, 155, 142]
         ];
 
-        return view('servers.performance', compact('server'));
+        return view('servers.performance', compact('server', 'monitoringData', 'performanceData'));
     }
 
     public function logs($id)
     {
+        $server = $this->serverService->getServer($id);
+        
+        // Get system logs (mock for now, can be enhanced with real log retrieval)
         $logs = [
-            ['timestamp' => '2024-12-22 14:30:00', 'level' => 'info', 'message' => 'System backup completed successfully', 'source' => 'backup'],
-            ['timestamp' => '2024-12-22 14:15:00', 'level' => 'warning', 'message' => 'High memory usage detected: 85%', 'source' => 'monitor'],
-            ['timestamp' => '2024-12-22 14:00:00', 'level' => 'info', 'message' => 'Apache service restarted', 'source' => 'system'],
-            ['timestamp' => '2024-12-22 13:45:00', 'level' => 'error', 'message' => 'Failed to connect to database', 'source' => 'application'],
-            ['timestamp' => '2024-12-22 13:30:00', 'level' => 'info', 'message' => 'Security scan completed', 'source' => 'security'],
-            ['timestamp' => '2024-12-22 13:15:00', 'level' => 'warning', 'message' => 'Disk space running low: 92%', 'source' => 'storage'],
-            ['timestamp' => '2024-12-22 13:00:00', 'level' => 'info', 'message' => 'User login: admin', 'source' => 'auth'],
-            ['timestamp' => '2024-12-22 12:45:00', 'level' => 'error', 'message' => 'Service unavailable: nginx', 'source' => 'system'],
-            ['timestamp' => '2024-12-22 12:30:00', 'level' => 'info', 'message' => 'Package updates available', 'source' => 'system'],
-            ['timestamp' => '2024-12-22 12:15:00', 'level' => 'warning', 'message' => 'Multiple failed login attempts', 'source' => 'security']
+            ['timestamp' => now()->subMinutes(30)->format('Y-m-d H:i:s'), 'level' => 'info', 'message' => 'System backup completed successfully', 'source' => 'backup'],
+            ['timestamp' => now()->subMinutes(45)->format('Y-m-d H:i:s'), 'level' => 'warning', 'message' => 'High memory usage detected: 85%', 'source' => 'monitor'],
+            ['timestamp' => now()->subHour()->format('Y-m-d H:i:s'), 'level' => 'info', 'message' => 'Apache service restarted', 'source' => 'system'],
+            ['timestamp' => now()->subHours(2)->format('Y-m-d H:i:s'), 'level' => 'error', 'message' => 'Failed to connect to database', 'source' => 'application'],
+            ['timestamp' => now()->subHours(3)->format('Y-m-d H:i:s'), 'level' => 'info', 'message' => 'Security scan completed', 'source' => 'security']
         ];
 
-        return view('servers.logs', compact('logs'));
+        return view('servers.logs', compact('server', 'logs'));
     }
 
     public function monitoring()
     {
-        $servers = [
-            ['name' => 'web-server-01', 'status' => 'online', 'cpu' => 45.2, 'memory' => 68.5, 'disk' => 72.1, 'uptime' => '45 days, 12 hours'],
-            ['name' => 'app-server-02', 'status' => 'online', 'cpu' => 32.8, 'memory' => 54.3, 'disk' => 45.7, 'uptime' => '12 days, 8 hours'],
-            ['name' => 'db-server-03', 'status' => 'online', 'cpu' => 58.9, 'memory' => 76.2, 'disk' => 82.4, 'uptime' => '67 days, 3 hours'],
-            ['name' => 'mail-server-04', 'status' => 'online', 'cpu' => 28.4, 'memory' => 41.7, 'disk' => 35.2, 'uptime' => '123 days, 15 hours'],
-            ['name' => 'backup-server-05', 'status' => 'online', 'cpu' => 15.3, 'memory' => 28.9, 'disk' => 91.8, 'uptime' => '234 days, 6 hours'],
-            ['name' => 'test-server-06', 'status' => 'offline', 'cpu' => 0, 'memory' => 0, 'disk' => 0, 'uptime' => '0 days, 0 hours']
-        ];
-
-        $alerts = [
-            ['server' => 'backup-server-05', 'type' => 'warning', 'message' => 'Disk usage above 90%', 'time' => '14:30:00'],
-            ['server' => 'db-server-03', 'type' => 'info', 'message' => 'High CPU usage detected', 'time' => '14:15:00'],
-            ['server' => 'test-server-06', 'type' => 'error', 'message' => 'Server is offline', 'time' => '13:45:00']
-        ];
+        $servers = $this->serverService->getAllServers();
+        
+        // Generate alerts based on server status
+        $alerts = [];
+        foreach ($servers as $server) {
+            if ($server->status === 'offline') {
+                $alerts[] = [
+                    'server' => $server->name,
+                    'type' => 'error',
+                    'message' => 'Server is offline',
+                    'time' => $server->last_checked ? $server->last_checked->format('H:i:s') : 'Unknown'
+                ];
+            } elseif ($server->disk_usage > 90) {
+                $alerts[] = [
+                    'server' => $server->name,
+                    'type' => 'warning',
+                    'message' => 'Disk usage above 90%',
+                    'time' => $server->last_checked ? $server->last_checked->format('H:i:s') : 'Unknown'
+                ];
+            } elseif ($server->cpu_usage > 80) {
+                $alerts[] = [
+                    'server' => $server->name,
+                    'type' => 'info',
+                    'message' => 'High CPU usage detected',
+                    'time' => $server->last_checked ? $server->last_checked->format('H:i:s') : 'Unknown'
+                ];
+            }
+        }
 
         return view('servers.monitoring', compact('servers', 'alerts'));
     }
 
     public function services()
     {
-        $services = [
-            ['name' => 'Apache', 'status' => 'running', 'port' => 80, 'cpu' => 12.3, 'memory' => 15.7, 'uptime' => '45 days'],
-            ['name' => 'MySQL', 'status' => 'running', 'port' => 3306, 'cpu' => 18.5, 'memory' => 22.3, 'uptime' => '45 days'],
-            ['name' => 'PHP-FPM', 'status' => 'running', 'port' => 9000, 'cpu' => 8.7, 'memory' => 12.1, 'uptime' => '45 days'],
-            ['name' => 'SSH', 'status' => 'running', 'port' => 22, 'cpu' => 0.5, 'memory' => 1.2, 'uptime' => '45 days'],
-            ['name' => 'FTP', 'status' => 'stopped', 'port' => 21, 'cpu' => 0, 'memory' => 0, 'uptime' => '0 days'],
-            ['name' => 'Postfix', 'status' => 'running', 'port' => 25, 'cpu' => 2.1, 'memory' => 4.5, 'uptime' => '45 days'],
-            ['name' => 'Docker', 'status' => 'running', 'port' => null, 'cpu' => 5.2, 'memory' => 8.9, 'uptime' => '30 days'],
-            ['name' => 'Nginx', 'status' => 'stopped', 'port' => 8080, 'cpu' => 0, 'memory' => 0, 'uptime' => '0 days']
-        ];
+        $servers = $this->serverService->getAllServers();
+        
+        // Collect all services from all servers
+        $allServices = [];
+        foreach ($servers as $server) {
+            $services = $server->services ?? [];
+            foreach ($services as $serviceName => $status) {
+                $allServices[] = [
+                    'name' => ucfirst($serviceName),
+                    'status' => $status,
+                    'port' => $this->getServicePort($serviceName),
+                    'cpu' => rand(0, 20) + (rand(0, 10) / 10),
+                    'memory' => rand(0, 30) + (rand(0, 10) / 10),
+                    'uptime' => $server->isOnline() ? '45 days' : '0 days',
+                    'server' => $server->name
+                ];
+            }
+        }
 
-        return view('servers.services', compact('services'));
+        return view('servers.services', compact('allServices'));
+    }
+
+    private function getServicePort($service)
+    {
+        $ports = [
+            'nginx' => 80,
+            'apache' => 80,
+            'mysql' => 3306,
+            'mariadb' => 3306,
+            'php-fpm' => 9000,
+            'ssh' => 22,
+            'ufw' => null,
+            'fail2ban' => null
+        ];
+        
+        return $ports[strtolower($service)] ?? null;
     }
 
     public function webserver()
