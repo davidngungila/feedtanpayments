@@ -17,7 +17,7 @@
                 <h5 class="card-title mb-0">Client Information</h5>
             </div>
             <div class="card-body">
-                <form id="createClientForm">
+                <form action="{{ route('clients.store') }}" method="POST" id="createClientForm">
                     @csrf
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -112,7 +112,7 @@ document.getElementById('createClientForm').addEventListener('submit', function(
     
     const formData = new FormData(this);
     
-    fetch('/clients', {
+    fetch('{{ route('clients.store') }}', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
