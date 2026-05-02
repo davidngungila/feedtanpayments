@@ -422,14 +422,17 @@ class ClientController extends Controller
             'usage_percentage' => 23,
             'daily_average' => '7.8 GB',
             'clients' => $clients->map(function ($client) {
+                $bandwidthUsed = rand(10, 200) . '.' . rand(0, 9);
+                $bandwidthLimit = rand(100, 500);
+                $usagePercent = ($bandwidthUsed / $bandwidthLimit) * 100;
                 return [
                     'id' => $client->id,
                     'name' => $client->name,
                     'email' => $client->email,
                     'status' => $client->status,
-                    'usage' => rand(10, 200) . '.' . rand(0, 9) . ' GB',
-                    'limit' => rand(100, 500) . ' GB',
-                    'percentage' => rand(10, 80),
+                    'bandwidth_used' => $bandwidthUsed,
+                    'bandwidth_limit' => $bandwidthLimit,
+                    'usage_percent' => $usagePercent,
                     'peak_day' => now()->subDays(rand(1, 7))->format('Y-m-d')
                 ];
             })
