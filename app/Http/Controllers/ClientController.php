@@ -294,7 +294,8 @@ class ClientController extends Controller
                 'disk_space' => '5 GB',
                 'bandwidth' => '100 GB',
                 'domains' => '1',
-                'email_accounts' => '5'
+                'email_accounts' => '5',
+                'databases' => '1'
             ],
             [
                 'id' => 2,
@@ -306,7 +307,8 @@ class ClientController extends Controller
                 'disk_space' => '25 GB',
                 'bandwidth' => '500 GB',
                 'domains' => '5',
-                'email_accounts' => '25'
+                'email_accounts' => '25',
+                'databases' => '5'
             ],
             [
                 'id' => 3,
@@ -318,7 +320,8 @@ class ClientController extends Controller
                 'disk_space' => '100 GB',
                 'bandwidth' => '2 TB',
                 'domains' => 'Unlimited',
-                'email_accounts' => 'Unlimited'
+                'email_accounts' => 'Unlimited',
+                'databases' => 'Unlimited'
             ]
         ];
 
