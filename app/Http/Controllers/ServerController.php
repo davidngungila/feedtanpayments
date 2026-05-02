@@ -287,31 +287,50 @@ class ServerController extends Controller
 
     public function phpfpm()
     {
-        $phpfpm_config = [
-            'version' => '8.2.12',
-            'status' => 'running',
-            'process_manager' => 'ondemand',
-            'max_children' => 50,
-            'active_processes' => 8,
-            'idle_processes' => 12,
-            'requests_per_second' => 156,
-            'memory_usage' => '45.6 MB',
-            'pools' => [
-                ['name' => 'www', 'processes' => 8, 'max_children' => 20, 'status' => 'active'],
-                ['name' => 'api', 'processes' => 4, 'max_children' => 10, 'status' => 'active'],
-                ['name' => 'admin', 'processes' => 2, 'max_children' => 5, 'status' => 'active']
-            ],
-            'extensions' => ['curl', 'gd', 'json', 'mbstring', 'openssl', 'pdo', 'pdo_mysql', 'redis', 'xml'],
-            'opcache' => [
-                'enabled' => true,
-                'memory_usage' => '64MB',
-                'hit_rate' => '89.5%',
-                'cached_scripts' => 1247,
-                'misses' => 145
-            ]
-        ];
+        $servers = $this->serverService->getAllServers();
+        
+        // Filter servers that have PHP-FPM services
+        $phpfpmservers = $servers->filter(function($server) {
+            $services = $server->services ?? [];
+            return isset($services['php-fpm']);
+        });
+        
+        // Collect all PHP-FPM pools from all servers
+        $allPools = [];
+        foreach ($phpfpmservers as $server) {
+            $poolCount = $server->phpfpm_pools ?? rand(1, 3);
+            for ($i = 0; $i < $poolCount; $i++) {
+                $allPools[] = [
+                    'name' => $this->generatePoolName($server->name, $i),
+                    'server_id' => $server->id,
+                    'server_name' => $server->name,
+                    'status' => $server->status === 'online' ? 'active' : 'inactive',
+                    'processes' => rand(5, 15),
+                    'max_children' => $server->max_children ?? 50,
+                    'version' => $server->php_version ?? '8.2.12',
+                    'owner' => 'www-data'
+                ];
+            }
+        }
+        
+        // Calculate statistics
+        $totalActiveProcesses = $phpfpmservers->sum(function($server) {
+            return $server->active_processes ?? rand(5, 15);
+        });
+        $avgRequestsPerSecond = $phpfpmservers->avg(function($server) {
+            return $server->requests_per_second ?? (rand(50, 200) / 10);
+        });
+        $avgMemoryUsage = $phpfpmservers->avg(function($server) {
+            return $server->memory_usage ?? rand(20, 60);
+        });
 
-        return view('servers.phpfpm', compact('phpfpm_config'));
+        return view('servers.phpfpm', compact('servers', 'phpfpmservers', 'allPools', 'totalActiveProcesses', 'avgRequestsPerSecond', 'avgMemoryUsage'));
+    }
+
+    private function generatePoolName($serverName, $index)
+    {
+        $poolNames = ['www', 'api', 'admin', 'cli', 'backend', 'frontend'];
+        return $poolNames[$index % count($poolNames)];
     }
 
     public function ssh()
