@@ -433,14 +433,16 @@ class ClientController extends Controller
             'parked_domains' => $clients->count(),
             'subdomains' => $clients->count() * 5,
             'clients' => $clients->map(function ($client) {
+                $domainsUsed = rand(1, 10);
+                $domainsLimit = rand(5, 50);
                 return [
                     'id' => $client->id,
                     'name' => $client->name,
                     'email' => $client->email,
                     'status' => $client->status,
-                    'domains' => rand(1, 10),
-                    'limit' => rand(5, 50),
-                    'usage_percentage' => rand(10, 90),
+                    'domains_used' => $domainsUsed,
+                    'domains_limit' => $domainsLimit,
+                    'usage_percentage' => ($domainsUsed / $domainsLimit) * 100,
                     'primary_domain' => strtolower(str_replace(' ', '', $client->name)) . '.com'
                 ];
             })
@@ -461,6 +463,12 @@ class ClientController extends Controller
             'failed_logins_24h' => rand(5, 25),
             'active_sessions' => rand(20, 100),
             'clients' => $clients->map(function ($client) {
+                // Generate IP whitelist array
+                $ipWhitelist = [];
+                for ($i = 0; $i < rand(2, 5); $i++) {
+                    $ipWhitelist[] = rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255);
+                }
+                
                 return [
                     'id' => $client->id,
                     'name' => $client->name,
@@ -470,7 +478,9 @@ class ClientController extends Controller
                     'login_count_24h' => rand(0, 20),
                     'failed_attempts' => rand(0, 5),
                     'ip_address' => rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255),
-                    'session_status' => rand(0, 1) ? 'Active' : 'Inactive'
+                    'session_status' => rand(0, 1) ? 'Active' : 'Inactive',
+                    'session_timeout' => rand(15, 120),
+                    'ip_whitelist' => $ipWhitelist
                 ];
             })
         ];
