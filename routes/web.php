@@ -8,8 +8,10 @@ use App\Http\Controllers\ServerController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\HostingController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\FileManagerController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
     return redirect()->route('login');
