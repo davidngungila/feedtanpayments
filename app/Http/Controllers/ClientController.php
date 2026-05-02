@@ -481,7 +481,8 @@ class ClientController extends Controller
                     'ip_address' => rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255),
                     'session_status' => rand(0, 1) ? 'Active' : 'Inactive',
                     'session_timeout' => rand(15, 120),
-                    'ip_whitelist' => $ipWhitelist
+                    'ip_whitelist' => $ipWhitelist,
+                    'permissions' => ['read', 'write', 'delete', 'manage_users', 'view_reports']
                 ];
             })
         ];
