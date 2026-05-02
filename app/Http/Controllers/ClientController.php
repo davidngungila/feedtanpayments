@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 
-class ClientControllerNew extends Controller
+class ClientController extends Controller
 {
     /**
      * Display a listing of clients.
