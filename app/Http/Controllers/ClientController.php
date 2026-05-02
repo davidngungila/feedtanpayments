@@ -276,4 +276,157 @@ class ClientController extends Controller
             'clients' => $clients
         ]);
     }
+
+    /**
+     * Display client packages page.
+     */
+    public function clientPackages()
+    {
+        $clients = Client::orderBy('name')->get();
+        $packages = [
+            [
+                'name' => 'Starter',
+                'price' => 9.99,
+                'features' => ['1 Website', '5 GB Storage', '100 GB Bandwidth', '1 Database', 'Email Support'],
+                'clients_count' => $clients->where('credit_limit', '<=', 2000)->count()
+            ],
+            [
+                'name' => 'Professional',
+                'price' => 29.99,
+                'features' => ['5 Websites', '25 GB Storage', '500 GB Bandwidth', '5 Databases', 'Priority Support'],
+                'clients_count' => $clients->where('credit_limit', '>', 2000)->where('credit_limit', '<=', 8000)->count()
+            ],
+            [
+                'name' => 'Enterprise',
+                'price' => 99.99,
+                'features' => ['Unlimited Websites', '100 GB Storage', '2 TB Bandwidth', 'Unlimited Databases', '24/7 Phone Support'],
+                'clients_count' => $clients->where('credit_limit', '>', 8000)->count()
+            ]
+        ];
+
+        return view('clients.packages', compact('clients', 'packages'));
+    }
+
+    /**
+     * Display client resource limits page.
+     */
+    public function resourceLimits()
+    {
+        $clients = Client::orderBy('name')->get();
+        
+        $resourceLimits = [
+            'cpu' => ['limit' => '2 Cores', 'usage' => '45%'],
+            'memory' => ['limit' => '4 GB', 'usage' => '62%'],
+            'storage' => ['limit' => '50 GB', 'usage' => '78%'],
+            'bandwidth' => ['limit' => '1 TB', 'usage' => '23%'],
+            'email_accounts' => ['limit' => '100', 'usage' => '34'],
+            'databases' => ['limit' => '10', 'usage' => '6']
+        ];
+
+        return view('clients.resource-limits', compact('clients', 'resourceLimits'));
+    }
+
+    /**
+     * Display client disk space page.
+     */
+    public function diskSpace()
+    {
+        $clients = Client::orderBy('name')->get();
+        
+        $diskUsage = [
+            'total_space' => '500 GB',
+            'used_space' => '125.3 GB',
+            'free_space' => '374.7 GB',
+            'usage_percentage' => 25,
+            'clients' => $clients->map(function ($client) {
+                return [
+                    'name' => $client->name,
+                    'used_space' => rand(1, 50) . '.' . rand(0, 9) . ' GB',
+                    'files_count' => rand(100, 5000),
+                    'last_backup' => now()->subDays(rand(1, 30))->format('Y-m-d')
+                ];
+            })
+        ];
+
+        return view('clients.disk-space', compact('clients', 'diskUsage'));
+    }
+
+    /**
+     * Display client bandwidth page.
+     */
+    public function bandwidth()
+    {
+        $clients = Client::orderBy('name')->get();
+        
+        $bandwidthData = [
+            'monthly_limit' => '1 TB',
+            'current_usage' => '234.5 GB',
+            'remaining' => '765.5 GB',
+            'usage_percentage' => 23,
+            'daily_average' => '7.8 GB',
+            'clients' => $clients->map(function ($client) {
+                return [
+                    'name' => $client->name,
+                    'usage' => rand(10, 200) . '.' . rand(0, 9) . ' GB',
+                    'limit' => rand(100, 500) . ' GB',
+                    'percentage' => rand(10, 80),
+                    'peak_day' => now()->subDays(rand(1, 7))->format('Y-m-d')
+                ];
+            })
+        ];
+
+        return view('clients.bandwidth', compact('clients', 'bandwidthData'));
+    }
+
+    /**
+     * Display client domains limit page.
+     */
+    public function domainsLimit()
+    {
+        $clients = Client::orderBy('name')->get();
+        
+        $domainsData = [
+            'total_domains' => $clients->count() * 3, // Average 3 domains per client
+            'active_domains' => $clients->count() * 2,
+            'parked_domains' => $clients->count(),
+            'subdomains' => $clients->count() * 5,
+            'clients' => $clients->map(function ($client) {
+                return [
+                    'name' => $client->name,
+                    'domains' => rand(1, 10),
+                    'limit' => rand(5, 50),
+                    'usage_percentage' => rand(10, 90),
+                    'primary_domain' => strtolower(str_replace(' ', '', $client->name)) . '.com'
+                ];
+            })
+        ];
+
+        return view('clients.domains-limit', compact('clients', 'domainsData'));
+    }
+
+    /**
+     * Display client login access page.
+     */
+    public function clientLoginAccess()
+    {
+        $clients = Client::orderBy('name')->get();
+        
+        $loginData = [
+            'total_logins_24h' => rand(100, 500),
+            'failed_logins_24h' => rand(5, 25),
+            'active_sessions' => rand(20, 100),
+            'clients' => $clients->map(function ($client) {
+                return [
+                    'name' => $client->name,
+                    'last_login' => now()->subMinutes(rand(1, 1440))->format('Y-m-d H:i:s'),
+                    'login_count_24h' => rand(0, 20),
+                    'failed_attempts' => rand(0, 5),
+                    'ip_address' => rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255),
+                    'status' => rand(0, 1) ? 'Active' : 'Inactive'
+                ];
+            })
+        ];
+
+        return view('clients.login-access', compact('clients', 'loginData'));
+    }
 }
