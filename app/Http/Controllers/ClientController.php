@@ -348,6 +348,11 @@ class ClientController extends Controller
             $bandwidthUsed = rand(10, 200) . '.' . rand(0, 9);
             $bandwidthLimit = rand(100, 500) . '.' . rand(0, 9);
             
+            $domainsUsed = rand(1, 10);
+            $domainsLimit = rand(5, 50);
+            // Ensure domains_limit is never zero to prevent division by zero
+            $domainsLimit = max($domainsLimit, 1);
+            
             return [
                 'id' => $client->id,
                 'name' => $client->name,
@@ -358,6 +363,8 @@ class ClientController extends Controller
                 'disk_limit' => $diskLimit . ' GB',
                 'bandwidth_used' => $bandwidthUsed . ' GB',
                 'bandwidth_limit' => $bandwidthLimit . ' GB',
+                'domains_used' => $domainsUsed,
+                'domains_limit' => $domainsLimit,
                 'cpu_usage' => rand(10, 80) . '%',
                 'memory_usage' => rand(20, 90) . '%',
                 'email_accounts' => rand(5, 50),
