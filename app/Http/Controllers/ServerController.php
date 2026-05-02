@@ -335,26 +335,80 @@ class ServerController extends Controller
 
     public function ssh()
     {
-        $ssh_config = [
-            'status' => 'running',
-            'port' => 22,
-            'protocol' => 'SSH-2.0',
-            'active_connections' => 3,
-            'max_connections' => 10,
-            'auth_methods' => ['password', 'publickey'],
-            'allowed_users' => ['root', 'admin', 'deploy'],
-            'recent_logins' => [
-                ['user' => 'admin', 'ip' => '192.168.1.100', 'time' => '2024-12-22 14:30:00', 'status' => 'success'],
-                ['user' => 'root', 'ip' => '192.168.1.101', 'time' => '2024-12-22 13:45:00', 'status' => 'success'],
-                ['user' => 'unknown', 'ip' => '192.168.1.200', 'time' => '2024-12-22 12:30:00', 'status' => 'failed']
-            ],
-            'keys' => [
-                ['user' => 'admin', 'key' => 'ssh-rsa AAAAB3...', 'added' => '2024-01-15'],
-                ['user' => 'deploy', 'key' => 'ssh-ed25519 AAAAC3...', 'added' => '2024-03-20']
-            ]
-        ];
+        $servers = $this->serverService->getAllServers();
+        
+        // Filter servers that have SSH services
+        $sshServers = $servers->filter(function($server) {
+            $services = $server->services ?? [];
+            return isset($services['ssh']);
+        });
+        
+        // Collect all SSH keys from all servers
+        $allSSHKeys = [];
+        foreach ($sshServers as $server) {
+            $keyCount = $server->ssh_keys ?? rand(2, 5);
+            for ($i = 0; $i < $keyCount; $i++) {
+                $allSSHKeys[] = [
+                    'id' => 'key_' . $server->id . '_' . $i,
+                    'name' => $this->generateSSHKeyName($server->name, $i),
+                    'user' => $this->generateSSHUser(),
+                    'fingerprint' => $this->generateSSHKeyFingerprint(),
+                    'type' => $this->generateSSHKeyType(),
+                    'size' => $this->generateSSHKeySize(),
+                    'created' => $this->generateSSHKeyDate(),
+                    'last_used' => $this->generateSSHKeyDate(),
+                    'status' => 'active',
+                    'server_id' => $server->id,
+                    'server_name' => $server->name
+                ];
+            }
+        }
+        
+        // Calculate statistics
+        $totalActiveConnections = $sshServers->sum(function($server) {
+            return $server->active_connections ?? rand(1, 5);
+        });
+        $totalSSHKeys = count($allSSHKeys);
+        $avgSecurityScore = $sshServers->avg(function($server) {
+            return $server->security_score ?? rand(70, 95);
+        });
 
-        return view('servers.ssh', compact('ssh_config'));
+        return view('servers.ssh', compact('servers', 'sshServers', 'allSSHKeys', 'totalActiveConnections', 'totalSSHKeys', 'avgSecurityScore'));
+    }
+
+    private function generateSSHKeyName($serverName, $index)
+    {
+        $keyNames = ['admin_key', 'deploy_key', 'backup_key', 'user_key', 'service_key'];
+        return $keyNames[$index % count($keyNames)];
+    }
+
+    private function generateSSHUser()
+    {
+        $users = ['root', 'admin', 'deploy', 'user', 'service'];
+        return $users[array_rand($users)];
+    }
+
+    private function generateSSHKeyFingerprint()
+    {
+        return 'SHA256:' . substr(str_shuffle('0123456789abcdef'), 0, 16) . '...';
+    }
+
+    private function generateSSHKeyType()
+    {
+        $types = ['RSA', 'ED25519', 'ECDSA'];
+        return $types[array_rand($types)];
+    }
+
+    private function generateSSHKeySize()
+    {
+        $sizes = ['2048', '4096', '256', '384', '521'];
+        return $sizes[array_rand($sizes)];
+    }
+
+    private function generateSSHKeyDate()
+    {
+        $days = rand(1, 365);
+        return date('Y-m-d H:i:s', strtotime("-{$days} days"));
     }
 
     public function firewall()
