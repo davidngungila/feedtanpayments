@@ -353,6 +353,11 @@ class ClientController extends Controller
             // Ensure domains_limit is never zero to prevent division by zero
             $domainsLimit = max($domainsLimit, 1);
             
+            $emailUsed = rand(1, 25);
+            $emailLimit = rand(10, 100);
+            // Ensure email_limit is never zero to prevent division by zero
+            $emailLimit = max($emailLimit, 1);
+            
             return [
                 'id' => $client->id,
                 'name' => $client->name,
@@ -365,6 +370,8 @@ class ClientController extends Controller
                 'bandwidth_limit' => $bandwidthLimit . ' GB',
                 'domains_used' => $domainsUsed,
                 'domains_limit' => $domainsLimit,
+                'email_used' => $emailUsed,
+                'email_limit' => $emailLimit,
                 'cpu_usage' => rand(10, 80) . '%',
                 'memory_usage' => rand(20, 90) . '%',
                 'email_accounts' => rand(5, 50),
