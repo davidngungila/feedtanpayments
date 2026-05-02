@@ -36,14 +36,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [ServerController::class, 'index'])->name('index');
         Route::get('/create', [ServerController::class, 'create'])->name('create');
         Route::post('/store', [ServerController::class, 'store'])->name('store');
-        Route::get('/{id}', [ServerController::class, 'show'])->name('show');
-        Route::get('/{id}/edit', [ServerController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [ServerController::class, 'update'])->name('update');
-        Route::get('/{id}/performance', [ServerController::class, 'performance'])->name('performance');
-        Route::get('/{id}/logs', [ServerController::class, 'logs'])->name('logs');
-        Route::delete('/{id}', [ServerController::class, 'destroy'])->name('destroy');
         
-        // Server Management Sub-pages
+        // Server Management Sub-pages (must come before parameterized routes)
         Route::get('/monitoring', [ServerController::class, 'monitoring'])->name('monitoring');
         Route::get('/services', [ServerController::class, 'services'])->name('services');
         Route::get('/webserver', [ServerController::class, 'webserver'])->name('webserver');
@@ -52,6 +46,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/ssh', [ServerController::class, 'ssh'])->name('ssh');
         Route::get('/firewall', [ServerController::class, 'firewall'])->name('firewall');
         Route::get('/fail2ban', [ServerController::class, 'fail2ban'])->name('fail2ban');
+        
+        // Parameterized routes (must come after specific routes)
+        Route::get('/{id}', [ServerController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [ServerController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [ServerController::class, 'update'])->name('update');
+        Route::get('/{id}/performance', [ServerController::class, 'performance'])->name('performance');
+        Route::get('/{id}/logs', [ServerController::class, 'logs'])->name('logs');
+        Route::delete('/{id}', [ServerController::class, 'destroy'])->name('destroy');
     });
 
     // File Manager routes
