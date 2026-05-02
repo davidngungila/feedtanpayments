@@ -339,35 +339,190 @@ function exportLimits() {
 }
 
 function viewDetails(id) {
-    showNotification(`Viewing resource details for client ${id}...`, 'info');
+    // Find client data and show detailed resource information
+    const clientData = findClientResourceData(id);
+    if (clientData) {
+        const details = `
+            Client: ${clientData.name}
+            Email: ${clientData.email}
+            Package: ${clientData.package}
+            Status: ${clientData.status}
+            
+            Resource Usage:
+            Disk: ${clientData.disk_used} / ${clientData.disk_limit}
+            Bandwidth: ${clientData.bandwidth_used} / ${clientData.bandwidth_limit}
+            Domains: ${clientData.domains_used} / ${clientData.domains_limit}
+            Email: ${clientData.email_used} / ${clientData.email_limit}
+            CPU: ${clientData.cpu_usage}
+            Memory: ${clientData.memory_usage}
+            Email Accounts: ${clientData.email_accounts}
+            Databases: ${clientData.databases}
+        `;
+        showNotification(`Resource Details:\\n${details}`, 'info');
+    } else {
+        showNotification('Client data not found', 'error');
+    }
 }
 
 function adjustLimits(id) {
-    showNotification(`Adjusting limits for client ${id}...`, 'info');
+    const clientData = findClientResourceData(id);
+    if (clientData) {
+        // Create a simple prompt interface for adjusting limits
+        const newDiskLimit = prompt(`Current disk limit: ${clientData.disk_limit}\\nEnter new disk limit (in GB):`, clientData.disk_limit.replace(' GB', ''));
+        const newBandwidthLimit = prompt(`Current bandwidth limit: ${clientData.bandwidth_limit}\\nEnter new bandwidth limit (in GB):`, clientData.bandwidth_limit.replace(' GB', ''));
+        const newDomainsLimit = prompt(`Current domains limit: ${clientData.domains_limit}\\nEnter new domains limit:`, clientData.domains_limit);
+        const newEmailLimit = prompt(`Current email limit: ${clientData.email_limit}\\nEnter new email limit:`, clientData.email_limit);
+        
+        if (newDiskLimit && newBandwidthLimit && newDomainsLimit && newEmailLimit) {
+            showNotification(`Resource limits updated for client ${id}:\\nDisk: ${newDiskLimit} GB\\nBandwidth: ${newBandwidthLimit} GB\\nDomains: ${newDomainsLimit}\\nEmail: ${newEmailLimit}`, 'success');
+            // In a real application, this would make an API call to update the database
+        } else {
+            showNotification('Please provide valid values for all limits', 'error');
+        }
+    } else {
+        showNotification('Client data not found', 'error');
+    }
 }
 
 function upgradePackage(id) {
-    showNotification(`Upgrading package for client ${id}...`, 'info');
+    const clientData = findClientResourceData(id);
+    if (clientData) {
+        const currentPackage = clientData.package;
+        const packages = ['Starter', 'Professional', 'Enterprise'];
+        const currentIndex = packages.indexOf(currentPackage);
+        
+        if (currentIndex < packages.length - 1) {
+            const newPackage = packages[currentIndex + 1];
+            const packagePrices = { 'Starter': '$9.99', 'Professional': '$29.99', 'Enterprise': '$99.99' };
+            
+            if (confirm(`Upgrade from ${currentPackage} (${packagePrices[currentPackage]}) to ${newPackage} (${packagePrices[newPackage]})?\\nThis will change the monthly billing.`)) {
+                showNotification(`Package upgraded from ${currentPackage} to ${newPackage} for client ${id}`, 'success');
+                // In a real application, this would make an API call to update the package
+            }
+        } else {
+            showNotification(`Client ${id} already has the highest package (${currentPackage})`, 'warning');
+        }
+    } else {
+        showNotification('Client data not found', 'error');
+    }
 }
 
 function sendWarning(id) {
-    if (confirm('Are you sure you want to send a warning to this client?')) {
-        showNotification(`Warning sent to client ${id}`, 'success');
+    const clientData = findClientResourceData(id);
+    if (clientData) {
+        const warningTypes = [
+            'Disk space usage warning',
+            'Bandwidth limit approaching',
+            'Domain limit exceeded',
+            'Email account quota warning',
+            'Resource usage notification',
+            'Account suspension warning'
+        ];
+        
+        const selectedWarning = prompt(`Select warning type for ${clientData.name}:\\n\\n1. ${warningTypes[0]}\\n2. ${warningTypes[1]}\\n3. ${warningTypes[2]}\\n4. ${warningTypes[3]}\\n5. ${warningTypes[4]}\\n6. ${warningTypes[5]}\\n\\nEnter number (1-6):`);
+        
+        if (selectedWarning && selectedWarning >= 1 && selectedWarning <= 6) {
+            const warningType = warningTypes[selectedWarning - 1];
+            const customMessage = prompt(`Custom message (optional):`, `Your ${warningType.toLowerCase()} requires immediate attention.`);
+            
+            showNotification(`Warning sent to ${clientData.name}: ${warningType}\\nMessage: ${customMessage}`, 'success');
+            // In a real application, this would send an email/notification to the client
+        } else if (selectedWarning !== null) {
+            showNotification('Please select a valid warning type (1-6)', 'error');
+        }
+    } else {
+        showNotification('Client data not found', 'error');
     }
 }
 
 function suspendClient(id) {
-    if (confirm('Are you sure you want to suspend this client?')) {
-        showNotification(`Client ${id} suspended`, 'warning');
+    const clientData = findClientResourceData(id);
+    if (clientData) {
+        const suspensionReasons = [
+            'Non-payment',
+            'Resource abuse',
+            'Terms of service violation',
+            'Security concerns',
+            'Exceeded resource limits',
+            'Other'
+        ];
+        
+        const reason = prompt(`Suspend ${clientData.name}?\\n\\nReason for suspension:\\n1. ${suspensionReasons[0]}\\n2. ${suspensionReasons[1]}\\n3. ${suspensionReasons[2]}\\n4. ${suspensionReasons[3]}\\n5. ${suspensionReasons[4]}\\n6. ${suspensionReasons[5]}\\n\\nEnter number (1-6):`);
+        
+        if (reason && reason >= 1 && reason <= 6) {
+            const suspensionReason = suspensionReasons[reason - 1];
+            const notes = prompt(`Additional notes (optional):`);
+            
+            if (confirm(`Are you sure you want to suspend ${clientData.name} for "${suspensionReason}"?\\nThis will disable all services.`)) {
+                showNotification(`Client ${id} suspended\\nReason: ${suspensionReason}\\nNotes: ${notes || 'None'}`, 'warning');
+                // In a real application, this would make an API call to suspend the client
+            }
+        } else if (reason !== null) {
+            showNotification('Please select a valid reason (1-6)', 'error');
+        }
+    } else {
+        showNotification('Client data not found', 'error');
     }
 }
 
 function terminateClient(id) {
-    if (confirm('Are you sure you want to terminate this client?')) {
-        if (confirm('This action cannot be undone. Are you absolutely sure?')) {
-            showNotification(`Client ${id} terminated`, 'danger');
+    const clientData = findClientResourceData(id);
+    if (clientData) {
+        const terminationReasons = [
+            'Request by client',
+            'Non-payment',
+            'Terms of service violation',
+            'Security breach',
+            'Account abandonment',
+            'Other'
+        ];
+        
+        const reason = prompt(`TERMINATE ${clientData.name.toUpperCase()}?\\n\\n⚠️  THIS ACTION CANNOT BE UNDONE ⚠️\\n\\nAll data will be permanently deleted.\\n\\nReason for termination:\\n1. ${terminationReasons[0]}\\n2. ${terminationReasons[1]}\\n3. ${terminationReasons[2]}\\n4. ${terminationReasons[3]}\\n5. ${terminationReasons[4]}\\n6. ${terminationReasons[5]}\\n\\nEnter number (1-6):`);
+        
+        if (reason && reason >= 1 && reason <= 6) {
+            const terminationReason = terminationReasons[reason - 1];
+            const confirmation = prompt(`Type "TERMINATE" to confirm deletion of all data for ${clientData.name}:`);
+            
+            if (confirmation === 'TERMINATE') {
+                showNotification(`🚨 CLIENT ${id} TERMINATED 🚨\\nClient: ${clientData.name}\\nReason: ${terminationReason}\\nAll data has been permanently deleted.`, 'danger');
+                // In a real application, this would make an API call to terminate and delete all client data
+            } else if (confirmation !== null) {
+                showNotification('Termination cancelled - confirmation did not match "TERMINATE"', 'error');
+            }
+        } else if (reason !== null) {
+            showNotification('Please select a valid reason (1-6)', 'error');
         }
+    } else {
+        showNotification('Client data not found', 'error');
     }
+}
+
+// Helper function to find client resource data
+function findClientResourceData(id) {
+    // This would typically come from the client data passed to the view
+    // For now, we'll return a mock object with realistic data
+    const packages = ['Starter', 'Professional', 'Enterprise'];
+    const package = packages[Math.floor(Math.random() * packages.length)];
+    
+    return {
+        id: id,
+        name: `Client ${id}`,
+        email: `client${id}@example.com`,
+        package: package,
+        status: 'active',
+        disk_used: (Math.random() * 50).toFixed(1) + ' GB',
+        disk_limit: (Math.random() * 50 + 50).toFixed(1) + ' GB',
+        bandwidth_used: (Math.random() * 200).toFixed(1) + ' GB',
+        bandwidth_limit: (Math.random() * 300 + 200).toFixed(1) + ' GB',
+        domains_used: Math.floor(Math.random() * 10) + 1,
+        domains_limit: Math.floor(Math.random() * 20) + 10,
+        email_used: Math.floor(Math.random() * 25) + 1,
+        email_limit: Math.floor(Math.random() * 50) + 25,
+        cpu_usage: Math.floor(Math.random() * 80) + 10 + '%',
+        memory_usage: Math.floor(Math.random() * 70) + 20 + '%',
+        email_accounts: Math.floor(Math.random() * 50) + 5,
+        databases: Math.floor(Math.random() * 10) + 1
+    };
 }
 
 function saveResourceSettings() {
