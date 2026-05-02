@@ -288,19 +288,22 @@ class ClientController extends Controller
                 'name' => 'Starter',
                 'price' => 9.99,
                 'features' => ['1 Website', '5 GB Storage', '100 GB Bandwidth', '1 Database', 'Email Support'],
-                'clients_count' => $clients->where('credit_limit', '<=', 2000)->count()
+                'clients_count' => $clients->where('credit_limit', '<=', 2000)->count(),
+                'active_clients' => $clients->where('credit_limit', '<=', 2000)->where('status', 'active')->count()
             ],
             [
                 'name' => 'Professional',
                 'price' => 29.99,
                 'features' => ['5 Websites', '25 GB Storage', '500 GB Bandwidth', '5 Databases', 'Priority Support'],
-                'clients_count' => $clients->where('credit_limit', '>', 2000)->where('credit_limit', '<=', 8000)->count()
+                'clients_count' => $clients->where('credit_limit', '>', 2000)->where('credit_limit', '<=', 8000)->count(),
+                'active_clients' => $clients->where('credit_limit', '>', 2000)->where('credit_limit', '<=', 8000)->where('status', 'active')->count()
             ],
             [
                 'name' => 'Enterprise',
                 'price' => 99.99,
                 'features' => ['Unlimited Websites', '100 GB Storage', '2 TB Bandwidth', 'Unlimited Databases', '24/7 Phone Support'],
-                'clients_count' => $clients->where('credit_limit', '>', 8000)->count()
+                'clients_count' => $clients->where('credit_limit', '>', 8000)->count(),
+                'active_clients' => $clients->where('credit_limit', '>', 8000)->where('status', 'active')->count()
             ]
         ];
 
