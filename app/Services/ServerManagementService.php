@@ -95,7 +95,7 @@ class ServerManagementService
         
         try {
             // Check if server is reachable (ping test)
-            $pingResult = $this->commandService->executeCommand("ping -c 1 {$server->ip_address}");
+            $pingResult = $this->commandService->execute("ping -c 1 {$server->ip_address}");
             
             if ($pingResult['success']) {
                 $server->status = 'online';
@@ -127,19 +127,19 @@ class ServerManagementService
     {
         try {
             // Get CPU usage
-            $cpuResult = $this->commandService->executeCommand("top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d'%' -f1");
+            $cpuResult = $this->commandService->execute("top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d'%' -f1");
             if ($cpuResult['success']) {
                 $server->cpu_usage = (float) $cpuResult['output'];
             }
 
             // Get memory usage
-            $memoryResult = $this->commandService->executeCommand("free | grep Mem | awk '{print ($3/$2) * 100.0}'");
+            $memoryResult = $this->commandService->execute("free | grep Mem | awk '{print ($3/$2) * 100.0}'");
             if ($memoryResult['success']) {
                 $server->memory_usage = (float) $memoryResult['output'];
             }
 
             // Get disk usage
-            $diskResult = $this->commandService->executeCommand("df -h / | awk 'NR==2 {print $5}' | cut -d'%' -f1");
+            $diskResult = $this->commandService->execute("df -h / | awk 'NR==2 {print $5}' | cut -d'%' -f1");
             if ($diskResult['success']) {
                 $server->disk_usage = (float) $diskResult['output'];
             }
@@ -170,7 +170,7 @@ class ServerManagementService
 
         foreach ($serviceCommands as $service => $command) {
             try {
-                $result = $this->commandService->executeCommand($command);
+                $result = $this->commandService->execute($command);
                 $services[$service] = $result['success'] ? trim($result['output']) : 'inactive';
             } catch (\Exception $e) {
                 $services[$service] = 'unknown';
@@ -206,7 +206,7 @@ class ServerManagementService
     private function getServerUptime(Server $server)
     {
         try {
-            $result = $this->commandService->executeCommand('uptime -p');
+            $result = $this->commandService->execute('uptime -p');
             return $result['success'] ? trim($result['output']) : 'Unknown';
         } catch (\Exception $e) {
             return 'Unknown';
@@ -219,7 +219,7 @@ class ServerManagementService
     private function getLoadAverage(Server $server)
     {
         try {
-            $result = $this->commandService->executeCommand('uptime | grep "load average"');
+            $result = $this->commandService->execute('uptime | grep "load average"');
             return $result['success'] ? trim($result['output']) : 'Unknown';
         } catch (\Exception $e) {
             return 'Unknown';
@@ -232,7 +232,7 @@ class ServerManagementService
     private function getNetworkConnections(Server $server)
     {
         try {
-            $result = $this->commandService->executeCommand('netstat -an | grep ESTABLISHED | wc -l');
+            $result = $this->commandService->execute('netstat -an | grep ESTABLISHED | wc -l');
             return $result['success'] ? (int) trim($result['output']) : 0;
         } catch (\Exception $e) {
             return 0;
@@ -248,7 +248,7 @@ class ServerManagementService
         
         try {
             $command = "sudo systemctl restart {$service}";
-            $result = $this->commandService->executeCommand($command);
+            $result = $this->commandService->execute($command);
             
             if ($result['success']) {
                 // Update service status
@@ -271,7 +271,7 @@ class ServerManagementService
         
         try {
             $command = "sudo journalctl -u {$service} -n {$lines} --no-pager";
-            $result = $this->commandService->executeCommand($command);
+            $result = $this->commandService->execute($command);
             
             return [
                 'success' => $result['success'],
