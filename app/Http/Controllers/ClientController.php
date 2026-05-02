@@ -291,7 +291,9 @@ class ClientController extends Controller
                 'clients_count' => $clients->where('credit_limit', '<=', 2000)->count(),
                 'active_clients' => $clients->where('credit_limit', '<=', 2000)->where('status', 'active')->count(),
                 'disk_space' => '5 GB',
-                'bandwidth' => '100 GB'
+                'bandwidth' => '100 GB',
+                'domains' => '1',
+                'email_accounts' => '5'
             ],
             [
                 'name' => 'Professional',
@@ -300,7 +302,9 @@ class ClientController extends Controller
                 'clients_count' => $clients->where('credit_limit', '>', 2000)->where('credit_limit', '<=', 8000)->count(),
                 'active_clients' => $clients->where('credit_limit', '>', 2000)->where('credit_limit', '<=', 8000)->where('status', 'active')->count(),
                 'disk_space' => '25 GB',
-                'bandwidth' => '500 GB'
+                'bandwidth' => '500 GB',
+                'domains' => '5',
+                'email_accounts' => '25'
             ],
             [
                 'name' => 'Enterprise',
@@ -309,7 +313,9 @@ class ClientController extends Controller
                 'clients_count' => $clients->where('credit_limit', '>', 8000)->count(),
                 'active_clients' => $clients->where('credit_limit', '>', 8000)->where('status', 'active')->count(),
                 'disk_space' => '100 GB',
-                'bandwidth' => '2 TB'
+                'bandwidth' => '2 TB',
+                'domains' => 'Unlimited',
+                'email_accounts' => 'Unlimited'
             ]
         ];
 
