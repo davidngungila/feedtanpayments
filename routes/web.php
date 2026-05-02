@@ -166,16 +166,16 @@ Route::prefix('clients')->name('clients.')->group(function () {
     Route::get('/', [ClientController::class, 'index'])->name('index');
     Route::get('/create', [ClientController::class, 'create'])->name('create');
     Route::post('/store', [ClientController::class, 'store'])->name('store');
-    Route::get('/{client}', [ClientController::class, 'show'])->name('show');
-    Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
-    Route::put('/{client}', [ClientController::class, 'update'])->name('update');
-    Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
     Route::get('/packages', [ClientController::class, 'clientPackages'])->name('packages');
     Route::get('/resource-limits', [ClientController::class, 'resourceLimits'])->name('resource-limits');
     Route::get('/disk-space', [ClientController::class, 'diskSpace'])->name('disk-space');
     Route::get('/bandwidth', [ClientController::class, 'bandwidth'])->name('bandwidth');
     Route::get('/domains-limit', [ClientController::class, 'domainsLimit'])->name('domains-limit');
     Route::get('/login-access', [ClientController::class, 'clientLoginAccess'])->name('login-access');
+    Route::get('/{client}', [ClientController::class, 'show'])->name('show');
+    Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
+    Route::put('/{client}', [ClientController::class, 'update'])->name('update');
+    Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
 });
 
 // Client switching API routes
