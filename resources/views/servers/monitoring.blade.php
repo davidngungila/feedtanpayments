@@ -13,6 +13,13 @@
                     <p class="card-subtitle">Real-time monitoring of all servers in your infrastructure</p>
                 </div>
                 <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" id="refreshInterval" onchange="updateRefreshInterval()">
+                        <option value="5">Auto-refresh: 5s</option>
+                        <option value="10" selected>Auto-refresh: 10s</option>
+                        <option value="30">Auto-refresh: 30s</option>
+                        <option value="60">Auto-refresh: 1min</option>
+                        <option value="0">Manual</option>
+                    </select>
                     <button class="btn btn-outline-success" onclick="refreshMonitoring()">
                         <i class="bx bx-refresh me-1"></i> Refresh
                     </button>
@@ -31,7 +38,7 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Total Servers</h6>
-                                <h4 class="mb-0">6</h4>
+                                <h4 class="mb-0">{{ $servers->count() }}</h4>
                             </div>
                         </div>
                     </div>
@@ -42,7 +49,7 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Online</h6>
-                                <h4 class="mb-0 text-success">5</h4>
+                                <h4 class="mb-0 text-success">{{ $servers->where('status', 'online')->count() }}</h4>
                             </div>
                         </div>
                     </div>
@@ -53,18 +60,18 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Offline</h6>
-                                <h4 class="mb-0 text-danger">1</h4>
+                                <h4 class="mb-0 text-danger">{{ $servers->where('status', 'offline')->count() }}</h4>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-2">
                         <div class="d-flex align-items-center">
                             <div class="avatar bg-warning bg-opacity-10 rounded-circle me-3" style="width: 40px; height: 40px;">
-                                <i class="bx bx-alert text-warning"></i>
+                                <i class="bx bx-error text-warning"></i>
                             </div>
                             <div>
                                 <h6 class="mb-0">Warnings</h6>
-                                <h4 class="mb-0 text-warning">2</h4>
+                                <h4 class="mb-0 text-warning">{{ $servers->filter(function($server) { return $server->cpu_usage > 80 || $server->memory_usage > 80 || $server->disk_usage > 80; })->count() }}</h4>
                             </div>
                         </div>
                     </div>
@@ -75,18 +82,18 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Avg CPU</h6>
-                                <h4 class="mb-0 text-info">36.1%</h4>
+                                <h4 class="mb-0 text-info">{{ $servers->avg('cpu_usage') ? number_format($servers->avg('cpu_usage'), 1) : '0' }}%</h4>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-2">
                         <div class="d-flex align-items-center">
-                            <div class="avatar bg-primary bg-opacity-10 rounded-circle me-3" style="width: 40px; height: 40px;">
-                                <i class="bx bx-memory text-primary"></i>
+                            <div class="avatar bg-secondary bg-opacity-10 rounded-circle me-3" style="width: 40px; height: 40px;">
+                                <i class="bx bx-memory text-secondary"></i>
                             </div>
                             <div>
                                 <h6 class="mb-0">Avg Memory</h6>
-                                <h4 class="mb-0">45.2%</h4>
+                                <h4 class="mb-0 text-secondary">{{ $servers->avg('memory_usage') ? number_format($servers->avg('memory_usage'), 1) : '0' }}%</h4>
                             </div>
                         </div>
                     </div>
@@ -100,11 +107,11 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div>
-                                        <h6 class="mb-1">{{ $server['name'] }}</h6>
-                                        <small class="text-muted">{{ $server['uptime'] }}</small>
+                                        <h6 class="mb-1">{{ $server->name }}</h6>
+                                        <small class="text-muted">{{ $server->hostname }} • {{ $server->location }}</small>
                                     </div>
-                                    <span class="badge bg-{{ $server['status'] == 'online' ? 'success' : 'danger' }}">
-                                        {{ $server['status'] }}
+                                    <span class="badge bg-{{ $server->status == 'online' ? 'success' : 'danger' }}">
+                                        {{ ucfirst($server->status) }}
                                     </span>
                                 </div>
                                 
@@ -113,20 +120,20 @@
                                         <small class="text-muted">CPU</small>
                                         <div class="d-flex align-items-center">
                                             <div class="progress me-2" style="width: 40px; height: 6px;">
-                                                <div class="progress-bar {{ $server['cpu'] > 80 ? 'bg-danger' : ($server['cpu'] > 60 ? 'bg-warning' : 'bg-success') }}" 
-                                                     style="width: {{ $server['cpu'] }}%"></div>
+                                                <div class="progress-bar {{ $server->cpu_usage > 80 ? 'bg-danger' : ($server->cpu_usage > 60 ? 'bg-warning' : 'bg-success') }}" 
+                                                     style="width: {{ $server->cpu_usage }}%"></div>
                                             </div>
-                                            <small>{{ $server['cpu'] }}%</small>
+                                            <small>{{ number_format($server->cpu_usage, 1) }}%</small>
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <small class="text-muted">Memory</small>
                                         <div class="d-flex align-items-center">
                                             <div class="progress me-2" style="width: 40px; height: 6px;">
-                                                <div class="progress-bar {{ $server['memory'] > 80 ? 'bg-danger' : ($server['memory'] > 60 ? 'bg-warning' : 'bg-success') }}" 
-                                                     style="width: {{ $server['memory'] }}%"></div>
+                                                <div class="progress-bar {{ $server->memory_usage > 80 ? 'bg-danger' : ($server->memory_usage > 60 ? 'bg-warning' : 'bg-success') }}" 
+                                                     style="width: {{ $server->memory_usage }}%"></div>
                                             </div>
-                                            <small>{{ $server['memory'] }}%</small>
+                                            <small>{{ number_format($server->memory_usage, 1) }}%</small>
                                         </div>
                                     </div>
                                 </div>
@@ -136,20 +143,16 @@
                                         <small class="text-muted">Disk</small>
                                         <div class="d-flex align-items-center">
                                             <div class="progress me-2" style="width: 40px; height: 6px;">
-                                                <div class="progress-bar {{ $server['disk'] > 80 ? 'bg-danger' : ($server['disk'] > 60 ? 'bg-warning' : 'bg-success') }}" 
-                                                     style="width: {{ $server['disk'] }}%"></div>
+                                                <div class="progress-bar {{ $server->disk_usage > 80 ? 'bg-danger' : ($server->disk_usage > 60 ? 'bg-warning' : 'bg-success') }}" 
+                                                     style="width: {{ $server->disk_usage }}%"></div>
                                             </div>
-                                            <small>{{ $server['disk'] }}%</small>
+                                            <small>{{ number_format($server->disk_usage, 1) }}%</small>
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <small class="text-muted">Status</small>
+                                        <small class="text-muted">Last Check</small>
                                         <div>
-                                            @if($server['status'] == 'online')
-                                                <span class="badge bg-success">Running</span>
-                                            @else
-                                                <span class="badge bg-danger">Down</span>
-                                            @endif
+                                            <small class="text-muted">{{ $server->last_checked ? $server->last_checked->diffForHumans() : 'Never' }}</small>
                                         </div>
                                     </div>
                                 </div>
@@ -203,12 +206,49 @@
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            @php
+                                                $alerts = [];
+                                                foreach($servers as $server) {
+                                                    if($server->cpu_usage > 80) {
+                                                        $alerts[] = [
+                                                            'server' => $server->name,
+                                                            'type' => 'warning',
+                                                            'message' => 'High CPU usage: ' . number_format($server->cpu_usage, 1) . '%',
+                                                            'time' => $server->last_checked ? $server->last_checked->format('H:i') : 'Unknown'
+                                                        ];
+                                                    }
+                                                    if($server->memory_usage > 80) {
+                                                        $alerts[] = [
+                                                            'server' => $server->name,
+                                                            'type' => 'warning',
+                                                            'message' => 'High memory usage: ' . number_format($server->memory_usage, 1) . '%',
+                                                            'time' => $server->last_checked ? $server->last_checked->format('H:i') : 'Unknown'
+                                                        ];
+                                                    }
+                                                    if($server->disk_usage > 80) {
+                                                        $alerts[] = [
+                                                            'server' => $server->name,
+                                                            'type' => 'error',
+                                                            'message' => 'High disk usage: ' . number_format($server->disk_usage, 1) . '%',
+                                                            'time' => $server->last_checked ? $server->last_checked->format('H:i') : 'Unknown'
+                                                        ];
+                                                    }
+                                                    if($server->status == 'offline') {
+                                                        $alerts[] = [
+                                                            'server' => $server->name,
+                                                            'type' => 'error',
+                                                            'message' => 'Server is offline',
+                                                            'time' => $server->last_checked ? $server->last_checked->format('H:i') : 'Unknown'
+                                                        ];
+                                                    }
+                                                }
+                                            @endphp
                                             @foreach($alerts as $alert)
                                             <tr>
                                                 <td>{{ $alert['server'] }}</td>
                                                 <td>
                                                     <span class="badge bg-{{ $alert['type'] == 'error' ? 'danger' : ($alert['type'] == 'warning' ? 'warning' : 'info') }}">
-                                                        {{ $alert['type'] }}
+                                                        {{ ucfirst($alert['type']) }}
                                                     </span>
                                                 </td>
                                                 <td>{{ $alert['message'] }}</td>
@@ -220,6 +260,11 @@
                                                 </td>
                                             </tr>
                                             @endforeach
+                                            @if(empty($alerts))
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">No alerts at this time</td>
+                                            </tr>
+                                            @endif
                                         </tbody>
                                     </table>
                                 </div>
@@ -236,22 +281,60 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Sample data for charts
-const cpuData = [45, 48, 42, 50, 47, 45, 43, 46, 44, 45, 48, 51, 49, 46, 44, 42, 45, 47, 50, 48];
-const memoryData = [68, 70, 65, 72, 69, 68, 66, 67, 68, 68, 71, 74, 72, 69, 67, 65, 68, 70, 73, 71];
+let refreshInterval = 10000; // Default 10 seconds
+let refreshTimer = null;
+
+// Real server data from Blade
+const serverData = @json($servers->map(function($server) {
+    return [
+        'id' => $server->id,
+        'name' => $server->name,
+        'hostname' => $server->hostname,
+        'status' => $server->status,
+        'cpu_usage' => $server->cpu_usage,
+        'memory_usage' => $server->memory_usage,
+        'disk_usage' => $server->disk_usage,
+        'location' => $server->location,
+        'last_checked' => $server->last_checked ? $server->last_checked->format('Y-m-d H:i:s') : null
+    ];
+}));
+
+// Generate time labels for charts
+function generateTimeLabels() {
+    const labels = [];
+    const now = new Date();
+    for (let i = 19; i >= 0; i--) {
+        const time = new Date(now - i * 30 * 60000);
+        labels.push(time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+    }
+    return labels;
+}
+
+// Generate sample trend data based on current values
+function generateTrendData(currentValue) {
+    const data = [];
+    for (let i = 0; i < 20; i++) {
+        const variation = (Math.random() - 0.5) * 10;
+        const value = Math.max(0, Math.min(100, currentValue + variation));
+        data.push(Math.round(value * 10) / 10);
+    }
+    data[data.length - 1] = currentValue; // Ensure last point is current value
+    return data;
+}
 
 // CPU Chart
 const cpuCtx = document.getElementById('cpuChart').getContext('2d');
-new Chart(cpuCtx, {
+const cpuChart = new Chart(cpuCtx, {
     type: 'line',
     data: {
-        labels: ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'],
+        labels: generateTimeLabels(),
         datasets: [{
-            label: 'CPU Usage (%)',
-            data: cpuData,
+            label: 'Average CPU Usage (%)',
+            data: generateTrendData(serverData.reduce((sum, server) => sum + server.cpu_usage, 0) / serverData.length),
             borderColor: '#28a745',
             backgroundColor: 'rgba(40, 167, 69, 0.1)',
-            tension: 0.4
+            tension: 0.4,
+            fill: true
         }]
     },
     options: {
@@ -265,7 +348,12 @@ new Chart(cpuCtx, {
         scales: {
             y: {
                 beginAtZero: true,
-                max: 100
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
             }
         }
     }
@@ -273,16 +361,17 @@ new Chart(cpuCtx, {
 
 // Memory Chart
 const memoryCtx = document.getElementById('memoryChart').getContext('2d');
-new Chart(memoryCtx, {
+const memoryChart = new Chart(memoryCtx, {
     type: 'line',
     data: {
-        labels: ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'],
+        labels: generateTimeLabels(),
         datasets: [{
-            label: 'Memory Usage (%)',
-            data: memoryData,
+            label: 'Average Memory Usage (%)',
+            data: generateTrendData(serverData.reduce((sum, server) => sum + server.memory_usage, 0) / serverData.length),
             borderColor: '#007bff',
             backgroundColor: 'rgba(0, 123, 255, 0.1)',
-            tension: 0.4
+            tension: 0.4,
+            fill: true
         }]
     },
     options: {
@@ -296,37 +385,186 @@ new Chart(memoryCtx, {
         scales: {
             y: {
                 beginAtZero: true,
-                max: 100
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
             }
         }
     }
 });
 
+// Advanced monitoring functions
 function refreshMonitoring() {
-    showNotification('Monitoring data refreshed', 'success');
+    showNotification('Refreshing monitoring data...', 'info');
+    
+    fetch('/api/servers/monitoring-data')
+        .then(response => response.json())
+        .then(data => {
+            updateCharts(data);
+            updateStatistics(data);
+            showNotification('Monitoring data updated', 'success');
+        })
+        .catch(error => {
+            console.log('Error fetching monitoring data');
+            setTimeout(() => location.reload(), 1000);
+        });
+}
+
+function updateCharts(data) {
+    // Update CPU chart
+    if (data.cpu_average !== undefined) {
+        const cpuData = cpuChart.data.datasets[0].data;
+        cpuData.shift();
+        cpuData.push(data.cpu_average);
+        cpuChart.update('none');
+    }
+    
+    // Update Memory chart
+    if (data.memory_average !== undefined) {
+        const memData = memoryChart.data.datasets[0].data;
+        memData.shift();
+        memData.push(data.memory_average);
+        memoryChart.update('none');
+    }
+}
+
+function updateStatistics(data) {
+    // Update statistics if elements exist
+    const totalServers = document.querySelector('.card-body h4');
+    if (totalServers && data.total_servers !== undefined) {
+        totalServers.textContent = data.total_servers;
+    }
+}
+
+function updateRefreshInterval() {
+    const select = document.getElementById('refreshInterval');
+    const interval = parseInt(select.value);
+    
+    if (interval === 0) {
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+        showNotification('Auto-refresh disabled', 'info');
+    } else {
+        refreshInterval = interval * 1000;
+        clearInterval(refreshTimer);
+        refreshTimer = setInterval(refreshMonitoring, refreshInterval);
+        showNotification(`Auto-refresh set to ${interval} seconds`, 'success');
+    }
 }
 
 function exportData() {
-    showNotification('Data export initiated', 'info');
+    const csvContent = generateCSV();
+    downloadCSV(csvContent, 'server-monitoring-' + new Date().toISOString().slice(0, 10) + '.csv');
+    showNotification('Monitoring data exported successfully', 'success');
+}
+
+function generateCSV() {
+    let csv = 'Server,Hostname,Status,CPU Usage,Memory Usage,Disk Usage,Location,Last Checked\n';
+    
+    serverData.forEach(server => {
+        csv += `"${server.name}","${server.hostname}","${server.status}","${server.cpu_usage}%","${server.memory_usage}%","${server.disk_usage}%","${server.location}","${server.last_checked || 'Never'}"\n`;
+    });
+    
+    return csv;
+}
+
+function downloadCSV(content, filename) {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 function viewAlertDetails(server, message) {
-    showNotification(`Alert details for ${server}: ${message}`, 'info');
+    showNotification(`Alert from ${server}: ${message}`, 'info');
+    
+    // Could open a modal with more details
+    console.log('Alert details:', { server, message });
 }
 
 function showNotification(message, type) {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification-alert');
+    existingNotifications.forEach(n => n.remove());
+    
     const alert = document.createElement('div');
-    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3 notification-alert`;
     alert.style.zIndex = '9999';
+    alert.style.minWidth = '300px';
     alert.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="d-flex align-items-center">
+            <i class="bx ${getIconForType(type)} me-2"></i>
+            <div class="flex-grow-1">${message}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     `;
     document.body.appendChild(alert);
     
     setTimeout(() => {
-        alert.remove();
-    }, 3000);
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
 }
+
+function getIconForType(type) {
+    const icons = {
+        'success': 'bx-check-circle',
+        'error': 'bx-x-circle',
+        'warning': 'bx-error',
+        'info': 'bx-info-circle'
+    };
+    return icons[type] || 'bx-info-circle';
+}
+
+// Auto-refresh on page load
+document.addEventListener('DOMContentLoaded', function() {
+    refreshTimer = setInterval(refreshMonitoring, refreshInterval);
+    
+    // Update last checked times every minute
+    setInterval(() => {
+        const lastCheckedElements = document.querySelectorAll('[data-last-checked]');
+        lastCheckedElements.forEach(element => {
+            const timestamp = element.getAttribute('data-last-checked');
+            if (timestamp) {
+                const date = new Date(timestamp);
+                element.textContent = getRelativeTime(date);
+            }
+        });
+    }, 60000);
+});
+
+function getRelativeTime(date) {
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000); // seconds
+    
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return Math.floor(diff / 60) + ' minutes ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+    return Math.floor(diff / 86400) + ' days ago';
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + R to refresh
+    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        refreshMonitoring();
+    }
+    
+    // Ctrl/Cmd + E to export
+    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        e.preventDefault();
+        exportData();
+    }
+});
 </script>
 @endpush

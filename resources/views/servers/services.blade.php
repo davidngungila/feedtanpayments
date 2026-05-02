@@ -10,9 +10,15 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <h5 class="card-title mb-0">Services Management</h5>
-                    <p class="card-subtitle">Manage system services and processes</p>
+                    <p class="card-subtitle">Manage system services and processes across all servers</p>
                 </div>
                 <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" id="serverFilter" onchange="filterByServer()">
+                        <option value="all">All Servers</option>
+                        @foreach($servers as $server)
+                        <option value="{{ $server->id }}">{{ $server->name }}</option>
+                        @endforeach
+                    </select>
                     <button class="btn btn-outline-success" onclick="refreshServices()">
                         <i class="bx bx-refresh me-1"></i> Refresh
                     </button>
@@ -31,7 +37,7 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Total Services</h6>
-                                <h4 class="mb-0">8</h4>
+                                <h4 class="mb-0">{{ $allServices->count() }}</h4>
                             </div>
                         </div>
                     </div>
@@ -42,7 +48,7 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Running</h6>
-                                <h4 class="mb-0 text-success">6</h4>
+                                <h4 class="mb-0 text-success">{{ $allServices->where('status', 'active')->count() }}</h4>
                             </div>
                         </div>
                     </div>
@@ -53,7 +59,7 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Stopped</h6>
-                                <h4 class="mb-0 text-danger">2</h4>
+                                <h4 class="mb-0 text-danger">{{ $allServices->where('status', '!=', 'active')->count() }}</h4>
                             </div>
                         </div>
                     </div>
@@ -64,7 +70,7 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Issues</h6>
-                                <h4 class="mb-0 text-warning">1</h4>
+                                <h4 class="mb-0 text-warning">{{ $allServices->filter(function($service) { return $service['status'] == 'inactive' || $service['status'] == 'failed'; })->count() }}</h4>
                             </div>
                         </div>
                     </div>
@@ -76,6 +82,7 @@
                         <thead>
                             <tr>
                                 <th>Service</th>
+                                <th>Server</th>
                                 <th>Status</th>
                                 <th>Port</th>
                                 <th>CPU Usage</th>
@@ -85,8 +92,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($services as $service)
-                            <tr>
+                            @foreach($allServices as $service)
+                            <tr data-server-id="{{ $service['server_id'] }}">
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar bg-primary bg-opacity-10 rounded-circle me-2" style="width: 32px; height: 32px;">
@@ -94,12 +101,15 @@
                                         </div>
                                         <div>
                                             <h6 class="mb-0">{{ $service['name'] }}</h6>
-                                            <small class="text-muted">System Service</small>
+                                            <small class="text-muted">{{ ucfirst($service['type']) }} Service</small>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    @if($service['status'] == 'running')
+                                    <span class="badge bg-secondary">{{ $service['server_name'] }}</span>
+                                </td>
+                                <td>
+                                    @if($service['status'] == 'active')
                                         <span class="badge bg-success">Running</span>
                                     @else
                                         <span class="badge bg-danger">Stopped</span>
@@ -115,23 +125,23 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="progress me-2" style="width: 60px; height: 6px;">
-                                            <div class="progress-bar {{ $service['cpu'] > 50 ? 'bg-warning' : 'bg-success' }}" 
-                                                 style="width: {{ $service['cpu'] * 5 }}%"></div>
+                                            <div class="progress-bar {{ ($service['cpu_usage'] ?? 0) > 50 ? 'bg-warning' : 'bg-success' }}" 
+                                                 style="width: {{ ($service['cpu_usage'] ?? 0) }}%"></div>
                                         </div>
-                                        <small>{{ $service['cpu'] }}%</small>
+                                        <small>{{ number_format($service['cpu_usage'] ?? 0, 1) }}%</small>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="progress me-2" style="width: 60px; height: 6px;">
-                                            <div class="progress-bar {{ $service['memory'] > 50 ? 'bg-warning' : 'bg-success' }}" 
-                                                 style="width: {{ $service['memory'] * 5 }}%"></div>
+                                            <div class="progress-bar {{ ($service['memory_usage'] ?? 0) > 50 ? 'bg-warning' : 'bg-success' }}" 
+                                                 style="width: {{ ($service['memory_usage'] ?? 0) }}%"></div>
                                         </div>
-                                        <small>{{ $service['memory'] }}%</small>
+                                        <small>{{ number_format($service['memory_usage'] ?? 0, 1) }}%</small>
                                     </div>
                                 </td>
                                 <td>
-                                    <small class="text-muted">{{ $service['uptime'] }}</small>
+                                    <small class="text-muted">{{ $service['uptime'] ?? 'Unknown' }}</small>
                                 </td>
                                 <td>
                                     <div class="dropdown">
@@ -139,18 +149,18 @@
                                             <i class="bx bx-dots-horizontal-rounded"></i>
                                         </button>
                                         <div class="dropdown-menu">
-                                            @if($service['status'] == 'running')
-                                                <a href="#" class="dropdown-item text-warning" onclick="stopService('{{ $service['name'] }}')">
+                                            @if($service['status'] == 'active')
+                                                <a href="#" class="dropdown-item text-warning" onclick="stopService('{{ $service['name'] }}', {{ $service['server_id'] }})">
                                                     <i class="bx bx-stop me-2"></i> Stop
                                                 </a>
-                                                <a href="#" class="dropdown-item text-info" onclick="restartService('{{ $service['name'] }}')">
+                                                <a href="#" class="dropdown-item text-info" onclick="restartService('{{ $service['name'] }}', {{ $service['server_id'] }})">
                                                     <i class="bx bx-refresh me-2"></i> Restart
                                                 </a>
-                                                <a href="#" class="dropdown-item" onclick="reloadService('{{ $service['name'] }}')">
+                                                <a href="#" class="dropdown-item" onclick="reloadService('{{ $service['name'] }}', {{ $service['server_id'] }})">
                                                     <i class="bx bx-sync me-2"></i> Reload Config
                                                 </a>
                                             @else
-                                                <a href="#" class="dropdown-item text-success" onclick="startService('{{ $service['name'] }}')">
+                                                <a href="#" class="dropdown-item text-success" onclick="startService('{{ $service['name'] }}', {{ $service['server_id'] }})">
                                                     <i class="bx bx-play me-2"></i> Start
                                                 </a>
                                             @endif
@@ -236,23 +246,34 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// Real service data from Blade
+const serviceData = @json($allServices);
+
 // Resource Usage Chart
 const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+const serviceNames = [...new Set(serviceData.map(s => s.name))].slice(0, 6);
+
 new Chart(resourceCtx, {
     type: 'bar',
     data: {
-        labels: ['Apache', 'MySQL', 'PHP-FPM', 'SSH', 'Postfix', 'Docker'],
+        labels: serviceNames,
         datasets: [
             {
                 label: 'CPU Usage (%)',
-                data: [12.3, 18.5, 8.7, 0.5, 2.1, 5.2],
+                data: serviceNames.map(name => {
+                    const service = serviceData.find(s => s.name === name);
+                    return service ? (service.cpu_usage || 0) : 0;
+                }),
                 backgroundColor: 'rgba(40, 167, 69, 0.6)',
                 borderColor: 'rgba(40, 167, 69, 1)',
                 borderWidth: 1
             },
             {
                 label: 'Memory Usage (%)',
-                data: [15.7, 22.3, 12.1, 1.2, 4.5, 8.9],
+                data: serviceNames.map(name => {
+                    const service = serviceData.find(s => s.name === name);
+                    return service ? (service.memory_usage || 0) : 0;
+                }),
                 backgroundColor: 'rgba(0, 123, 255, 0.6)',
                 borderColor: 'rgba(0, 123, 255, 1)',
                 borderWidth: 1
@@ -272,47 +293,225 @@ new Chart(resourceCtx, {
 });
 
 function refreshServices() {
-    showNotification('Services status refreshed', 'success');
+    showNotification('Refreshing services status...', 'info');
+    
+    fetch('/api/services/status')
+        .then(response => response.json())
+        .then(data => {
+            updateServiceStatus(data);
+            showNotification('Services status refreshed', 'success');
+        })
+        .catch(error => {
+            console.log('Error refreshing services');
+            setTimeout(() => location.reload(), 1000);
+        });
 }
 
 function startAllServices() {
     if (confirm('Are you sure you want to start all stopped services?')) {
         showNotification('Starting all services...', 'info');
+        
+        fetch('/api/services/start-all', {method: 'POST'})
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('All services started successfully', 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showNotification('Failed to start services: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.log('Error starting services');
+                setTimeout(() => location.reload(), 2000);
+            });
     }
 }
 
-function startService(serviceName) {
+function startService(serviceName, serverId) {
     showNotification(`Starting ${serviceName}...`, 'info');
+    
+    fetch(`/api/servers/${serverId}/services/${serviceName}/start`, {method: 'POST'})
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`${serviceName} started successfully`, 'success');
+                updateServiceStatusInTable(serviceName, 'active');
+            } else {
+                showNotification(`Failed to start ${serviceName}: ` + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.log('Error starting service');
+            setTimeout(() => location.reload(), 1000);
+        });
 }
 
-function stopService(serviceName) {
+function stopService(serviceName, serverId) {
     if (confirm(`Are you sure you want to stop ${serviceName}?`)) {
         showNotification(`Stopping ${serviceName}...`, 'warning');
+        
+        fetch(`/api/servers/${serverId}/services/${serviceName}/stop`, {method: 'POST'})
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`${serviceName} stopped successfully`, 'success');
+                    updateServiceStatusInTable(serviceName, 'inactive');
+                } else {
+                    showNotification(`Failed to stop ${serviceName}: ` + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.log('Error stopping service');
+                setTimeout(() => location.reload(), 1000);
+            });
     }
 }
 
-function restartService(serviceName) {
+function restartService(serviceName, serverId) {
     if (confirm(`Are you sure you want to restart ${serviceName}?`)) {
         showNotification(`Restarting ${serviceName}...`, 'info');
+        
+        fetch(`/api/servers/${serverId}/services/${serviceName}/restart`, {method: 'POST'})
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`${serviceName} restarted successfully`, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification(`Failed to restart ${serviceName}: ` + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.log('Error restarting service');
+                setTimeout(() => location.reload(), 1000);
+            });
     }
 }
 
-function reloadService(serviceName) {
+function reloadService(serviceName, serverId) {
     showNotification(`Reloading ${serviceName} configuration...`, 'info');
+    
+    fetch(`/api/servers/${serverId}/services/${serviceName}/reload`, {method: 'POST'})
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`${serviceName} configuration reloaded`, 'success');
+            } else {
+                showNotification(`Failed to reload ${serviceName}: ` + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.log('Error reloading service');
+        });
 }
 
 function viewServiceLogs(serviceName) {
-    showNotification(`Opening ${serviceName} logs...`, 'info');
+    window.open(`/services/${serviceName.toLowerCase()}/logs`, '_blank');
 }
 
 function editServiceConfig(serviceName) {
     showNotification(`Opening ${serviceName} configuration...`, 'info');
+    window.open(`/services/${serviceName.toLowerCase()}/config`, '_blank');
+}
+
+function filterByServer() {
+    const serverId = document.getElementById('serverFilter').value;
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        if (serverId === 'all') {
+            row.style.display = '';
+        } else {
+            const rowServerId = row.getAttribute('data-server-id');
+            row.style.display = rowServerId === serverId ? '' : 'none';
+        }
+    });
+    
+    showNotification(`Filtered by server: ${serverId === 'all' ? 'All Servers' : document.getElementById('serverFilter').selectedOptions[0].text}`, 'info');
+}
+
+function updateServiceStatus(data) {
+    // Update service status in the table based on API response
+    if (data.services) {
+        data.services.forEach(service => {
+            updateServiceStatusInTable(service.name, service.status);
+        });
+    }
+}
+
+function updateServiceStatusInTable(serviceName, status) {
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const serviceNameCell = row.querySelector('td h6');
+        if (serviceNameCell && serviceNameCell.textContent === serviceName) {
+            const statusCell = row.querySelector('td:nth-child(3) span');
+            if (statusCell) {
+                statusCell.className = `badge bg-${status === 'active' ? 'success' : 'danger'}`;
+                statusCell.textContent = status === 'active' ? 'Running' : 'Stopped';
+            }
+        }
+    });
 }
 
 function showNotification(message, type) {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification-alert');
+    existingNotifications.forEach(n => n.remove());
+    
     const alert = document.createElement('div');
-    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3 notification-alert`;
     alert.style.zIndex = '9999';
+    alert.style.minWidth = '300px';
+    alert.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bx ${getIconForType(type)} me-2"></i>
+            <div class="flex-grow-1">${message}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+function getIconForType(type) {
+    const icons = {
+        'success': 'bx-check-circle',
+        'error': 'bx-x-circle',
+        'warning': 'bx-error',
+        'info': 'bx-info-circle'
+    };
+    return icons[type] || 'bx-info-circle';
+}
+
+// Auto-refresh services status every 30 seconds
+setInterval(() => {
+    if (!document.hidden) {
+        refreshServices();
+    }
+}, 30000);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + R to refresh
+    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        refreshServices();
+    }
+    
+    // Ctrl/Cmd + A to start all
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        startAllServices();
+    }
+});
+</script>
+@endpush
     alert.innerHTML = `
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>

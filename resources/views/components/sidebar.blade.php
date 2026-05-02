@@ -3,7 +3,7 @@
     <div class="app-brand demo">
         <a href="{{ route('dashboard') }}" class="app-brand-link">
           
-            <span class="app-brand-text demo menu-text fw-bold ms-2">Server Panel</span>
+            <span class="app-brand-text demo menu-text fw-bold ms-2">ServerNex</span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">

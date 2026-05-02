@@ -146,7 +146,7 @@ class ServerController extends Controller
                 ];
             }
         }
-
+        
         return view('servers.monitoring', compact('servers', 'alerts'));
     }
 
@@ -161,17 +161,35 @@ class ServerController extends Controller
             foreach ($services as $serviceName => $status) {
                 $allServices[] = [
                     'name' => ucfirst($serviceName),
+                    'type' => $this->getServiceType($serviceName),
                     'status' => $status,
                     'port' => $this->getServicePort($serviceName),
-                    'cpu' => rand(0, 20) + (rand(0, 10) / 10),
-                    'memory' => rand(0, 30) + (rand(0, 10) / 10),
-                    'uptime' => $server->isOnline() ? '45 days' : '0 days',
-                    'server' => $server->name
+                    'cpu_usage' => $server->cpu_usage ? ($server->cpu_usage * 0.1) : rand(0, 20) + (rand(0, 10) / 10),
+                    'memory_usage' => $server->memory_usage ? ($server->memory_usage * 0.1) : rand(0, 30) + (rand(0, 10) / 10),
+                    'uptime' => $server->status === 'online' ? '45 days' : '0 days',
+                    'server_id' => $server->id,
+                    'server_name' => $server->name
                 ];
             }
         }
 
-        return view('servers.services', compact('allServices'));
+        return view('servers.services', compact('servers', 'allServices'));
+    }
+
+    private function getServiceType($service)
+    {
+        $types = [
+            'nginx' => 'web',
+            'apache' => 'web',
+            'mysql' => 'database',
+            'mariadb' => 'database',
+            'php-fpm' => 'php',
+            'ssh' => 'system',
+            'ufw' => 'security',
+            'fail2ban' => 'security'
+        ];
+        
+        return $types[$service] ?? 'system';
     }
 
     private function getServicePort($service)
