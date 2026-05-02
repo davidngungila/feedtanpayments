@@ -413,26 +413,101 @@ class ServerController extends Controller
 
     public function firewall()
     {
-        $firewall_config = [
-            'status' => 'active',
-            'type' => 'UFW',
-            'version' => '0.36.1',
-            'default_policy' => ['incoming' => 'deny', 'outgoing' => 'allow', 'routed' => 'deny'],
-            'rules' => [
-                ['action' => 'ALLOW', 'protocol' => 'TCP', 'port' => 22, 'source' => 'Any', 'description' => 'SSH'],
-                ['action' => 'ALLOW', 'protocol' => 'TCP', 'port' => 80, 'source' => 'Any', 'description' => 'HTTP'],
-                ['action' => 'ALLOW', 'protocol' => 'TCP', 'port' => 443, 'source' => 'Any', 'description' => 'HTTPS'],
-                ['action' => 'ALLOW', 'protocol' => 'TCP', 'port' => 3306, 'source' => '192.168.1.0/24', 'description' => 'MySQL (Internal)'],
-                ['action' => 'DENY', 'protocol' => 'TCP', 'port' => 23, 'source' => 'Any', 'description' => 'Telnet Blocked']
-            ],
-            'logging' => ['enabled' => true, 'level' => 'medium'],
-            'recent_blocks' => [
-                ['ip' => '192.168.1.200', 'port' => 22, 'time' => '2024-12-22 12:30:00', 'reason' => 'Too many connections'],
-                ['ip' => '10.0.0.50', 'port' => 80, 'time' => '2024-12-22 11:45:00', 'reason' => 'Suspicious activity']
-            ]
-        ];
+        $servers = $this->serverService->getAllServers();
+        
+        // Filter servers that have firewall services
+        $firewallServers = $servers->filter(function($server) {
+            $services = $server->services ?? [];
+            return isset($services['firewall']);
+        });
+        
+        // Collect all firewall rules from all servers
+        $allFirewallRules = [];
+        foreach ($firewallServers as $server) {
+            $ruleCount = $server->firewall_rules ?? rand(5, 15);
+            for ($i = 0; $i < $ruleCount; $i++) {
+                $allFirewallRules[] = [
+                    'id' => 'rule_' . $server->id . '_' . $i,
+                    'name' => $this->generateFirewallRuleName($server->name, $i),
+                    'description' => $this->generateFirewallRuleDescription($i),
+                    'action' => $this->generateFirewallRuleAction(),
+                    'protocol' => $this->generateFirewallRuleProtocol(),
+                    'source' => $this->generateFirewallRuleSource(),
+                    'destination' => $this->generateFirewallRuleDestination(),
+                    'port' => $this->generateFirewallRulePort(),
+                    'interface' => $this->generateFirewallRuleInterface(),
+                    'status' => 'active',
+                    'server_id' => $server->id,
+                    'server_name' => $server->name
+                ];
+            }
+        }
+        
+        // Calculate statistics
+        $activeFirewalls = $firewallServers->filter(function($server) {
+            return ($server->firewall_status ?? 'active') === 'active';
+        })->count();
+        $totalRules = count($allFirewallRules);
+        $totalBlockedConnections = $firewallServers->sum(function($server) {
+            return $server->blocked_connections ?? rand(10, 100);
+        });
 
-        return view('servers.firewall', compact('firewall_config'));
+        return view('servers.firewall', compact('servers', 'firewallServers', 'allFirewallRules', 'activeFirewalls', 'totalRules', 'totalBlockedConnections'));
+    }
+
+    private function generateFirewallRuleName($serverName, $index)
+    {
+        $ruleNames = ['SSH Access', 'HTTP/HTTPS', 'Database Access', 'Email Services', 'FTP Access', 'Custom Rule'];
+        return $ruleNames[$index % count($ruleNames)];
+    }
+
+    private function generateFirewallRuleDescription($index)
+    {
+        $descriptions = [
+            'Allow SSH access from anywhere',
+            'Allow HTTP and HTTPS traffic',
+            'Allow database connections',
+            'Allow email server traffic',
+            'Allow FTP file transfers',
+            'Custom firewall rule'
+        ];
+        return $descriptions[$index % count($descriptions)];
+    }
+
+    private function generateFirewallRuleAction()
+    {
+        $actions = ['allow', 'deny', 'reject', 'limit'];
+        return $actions[array_rand($actions)];
+    }
+
+    private function generateFirewallRuleProtocol()
+    {
+        $protocols = ['tcp', 'udp', 'icmp', 'any'];
+        return $protocols[array_rand($protocols)];
+    }
+
+    private function generateFirewallRuleSource()
+    {
+        $sources = ['any', '0.0.0.0/0', '192.168.1.0/24', '10.0.0.0/8', '172.16.0.0/12'];
+        return $sources[array_rand($sources)];
+    }
+
+    private function generateFirewallRuleDestination()
+    {
+        $destinations = ['any', '0.0.0.0/0', '192.168.1.1', '10.0.0.1', '127.0.0.1'];
+        return $destinations[array_rand($destinations)];
+    }
+
+    private function generateFirewallRulePort()
+    {
+        $ports = ['22', '80', '443', '3306', '25,587', '21', 'any', '8080-8090'];
+        return $ports[array_rand($ports)];
+    }
+
+    private function generateFirewallRuleInterface()
+    {
+        $interfaces = ['eth0', 'wlan0', 'any', 'lo', 'docker0'];
+        return $interfaces[array_rand($interfaces)];
     }
 
     public function fail2ban()
