@@ -326,7 +326,30 @@ class ClientController extends Controller
             'databases' => ['limit' => '10', 'usage' => '6']
         ];
 
-        return view('clients.resource-limits', compact('clients', 'resourceLimits'));
+        // Add client-specific resource data to avoid division by zero
+        $clientsWithResources = $clients->map(function ($client) {
+            $diskUsed = rand(1, 50) . '.' . rand(0, 9);
+            $diskLimit = rand(50, 100) . '.' . rand(0, 9);
+            $bandwidthUsed = rand(10, 200) . '.' . rand(0, 9);
+            $bandwidthLimit = rand(100, 500) . '.' . rand(0, 9);
+            
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+                'email' => $client->email,
+                'status' => $client->status,
+                'disk_used' => $diskUsed . ' GB',
+                'disk_limit' => $diskLimit . ' GB',
+                'bandwidth_used' => $bandwidthUsed . ' GB',
+                'bandwidth_limit' => $bandwidthLimit . ' GB',
+                'cpu_usage' => rand(10, 80) . '%',
+                'memory_usage' => rand(20, 90) . '%',
+                'email_accounts' => rand(5, 50),
+                'databases' => rand(1, 10)
+            ];
+        });
+
+        return view('clients.resource-limits', compact('clientsWithResources', 'resourceLimits'));
     }
 
     /**
@@ -342,11 +365,24 @@ class ClientController extends Controller
             'free_space' => '374.7 GB',
             'usage_percentage' => 25,
             'clients' => $clients->map(function ($client) {
+                // Generate large files array
+                $largeFiles = [];
+                for ($i = 0; $i < rand(3, 8); $i++) {
+                    $largeFiles[] = [
+                        'name' => 'file_' . $i . '.' . ['pdf', 'jpg', 'mp4', 'zip'][rand(0, 3)],
+                        'size' => rand(10, 500) . ' MB'
+                    ];
+                }
+                
                 return [
+                    'id' => $client->id,
                     'name' => $client->name,
+                    'email' => $client->email,
+                    'status' => $client->status,
                     'used_space' => rand(1, 50) . '.' . rand(0, 9) . ' GB',
                     'files_count' => rand(100, 5000),
-                    'last_backup' => now()->subDays(rand(1, 30))->format('Y-m-d')
+                    'last_backup' => now()->subDays(rand(1, 30))->format('Y-m-d H:i:s'),
+                    'large_files' => $largeFiles
                 ];
             })
         ];
@@ -369,7 +405,10 @@ class ClientController extends Controller
             'daily_average' => '7.8 GB',
             'clients' => $clients->map(function ($client) {
                 return [
+                    'id' => $client->id,
                     'name' => $client->name,
+                    'email' => $client->email,
+                    'status' => $client->status,
                     'usage' => rand(10, 200) . '.' . rand(0, 9) . ' GB',
                     'limit' => rand(100, 500) . ' GB',
                     'percentage' => rand(10, 80),
@@ -395,7 +434,10 @@ class ClientController extends Controller
             'subdomains' => $clients->count() * 5,
             'clients' => $clients->map(function ($client) {
                 return [
+                    'id' => $client->id,
                     'name' => $client->name,
+                    'email' => $client->email,
+                    'status' => $client->status,
                     'domains' => rand(1, 10),
                     'limit' => rand(5, 50),
                     'usage_percentage' => rand(10, 90),
@@ -420,12 +462,15 @@ class ClientController extends Controller
             'active_sessions' => rand(20, 100),
             'clients' => $clients->map(function ($client) {
                 return [
+                    'id' => $client->id,
                     'name' => $client->name,
+                    'email' => $client->email,
+                    'status' => $client->status,
                     'last_login' => now()->subMinutes(rand(1, 1440))->format('Y-m-d H:i:s'),
                     'login_count_24h' => rand(0, 20),
                     'failed_attempts' => rand(0, 5),
                     'ip_address' => rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255) . '.' . rand(1, 255),
-                    'status' => rand(0, 1) ? 'Active' : 'Inactive'
+                    'session_status' => rand(0, 1) ? 'Active' : 'Inactive'
                 ];
             })
         ];
