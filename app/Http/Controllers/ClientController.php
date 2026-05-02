@@ -285,6 +285,7 @@ class ClientController extends Controller
         $clients = Client::orderBy('name')->get();
         $packages = [
             [
+                'id' => 1,
                 'name' => 'Starter',
                 'price' => 9.99,
                 'features' => ['1 Website', '5 GB Storage', '100 GB Bandwidth', '1 Database', 'Email Support'],
@@ -296,6 +297,7 @@ class ClientController extends Controller
                 'email_accounts' => '5'
             ],
             [
+                'id' => 2,
                 'name' => 'Professional',
                 'price' => 29.99,
                 'features' => ['5 Websites', '25 GB Storage', '500 GB Bandwidth', '5 Databases', 'Priority Support'],
@@ -307,6 +309,7 @@ class ClientController extends Controller
                 'email_accounts' => '25'
             ],
             [
+                'id' => 3,
                 'name' => 'Enterprise',
                 'price' => 99.99,
                 'features' => ['Unlimited Websites', '100 GB Storage', '2 TB Bandwidth', 'Unlimited Databases', '24/7 Phone Support'],
@@ -350,6 +353,7 @@ class ClientController extends Controller
                 'name' => $client->name,
                 'email' => $client->email,
                 'status' => $client->status,
+                'package' => $client->credit_limit <= 2000 ? 'Starter' : ($client->credit_limit <= 8000 ? 'Professional' : 'Enterprise'),
                 'disk_used' => $diskUsed . ' GB',
                 'disk_limit' => $diskLimit . ' GB',
                 'bandwidth_used' => $bandwidthUsed . ' GB',
@@ -389,12 +393,19 @@ class ClientController extends Controller
                     ];
                 }
                 
+                $diskUsed = rand(1, 50) . '.' . rand(0, 9);
+                $diskLimit = rand(50, 100) . '.' . rand(0, 9);
+                $usagePercent = ($diskUsed / $diskLimit) * 100;
+                
                 return [
                     'id' => $client->id,
                     'name' => $client->name,
                     'email' => $client->email,
                     'status' => $client->status,
-                    'used_space' => rand(1, 50) . '.' . rand(0, 9) . ' GB',
+                    'disk_used' => $diskUsed,
+                    'disk_limit' => $diskLimit,
+                    'usage_percent' => $usagePercent,
+                    'used_space' => $diskUsed . ' GB',
                     'files_count' => rand(100, 5000),
                     'last_backup' => now()->subDays(rand(1, 30))->format('Y-m-d H:i:s'),
                     'large_files' => $largeFiles
