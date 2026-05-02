@@ -512,25 +512,68 @@ class ServerController extends Controller
 
     public function fail2ban()
     {
-        $fail2ban_config = [
-            'status' => 'running',
-            'version' => '1.0.2',
-            'jails' => [
-                ['name' => 'sshd', 'enabled' => true, 'banned' => 5, 'max_retry' => 3, 'find_time' => '10m', 'bantime' => '1h'],
-                ['name' => 'apache', 'enabled' => true, 'banned' => 12, 'max_retry' => 5, 'find_time' => '10m', 'bantime' => '1h'],
-                ['name' => 'nginx', 'enabled' => false, 'banned' => 0, 'max_retry' => 5, 'find_time' => '10m', 'bantime' => '1h'],
-                ['name' => 'mysql', 'enabled' => true, 'banned' => 2, 'max_retry' => 3, 'find_time' => '10m', 'bantime' => '1h']
-            ],
-            'banned_ips' => [
-                ['ip' => '192.168.1.200', 'jail' => 'sshd', 'time' => '2024-12-22 12:30:00', 'unban_time' => '2024-12-22 13:30:00'],
-                ['ip' => '10.0.0.50', 'jail' => 'apache', 'time' => '2024-12-22 11:45:00', 'unban_time' => '2024-12-22 12:45:00'],
-                ['ip' => '172.16.0.100', 'jail' => 'sshd', 'time' => '2024-12-22 10:15:00', 'unban_time' => '2024-12-22 11:15:00']
-            ],
-            'log_files' => [
-                ['name' => '/var/log/fail2ban.log', 'size' => '2.4 MB', 'last_modified' => '2024-12-22 14:30:00']
-            ]
-        ];
+        $servers = $this->serverService->getAllServers();
+        
+        // Filter servers that have Fail2Ban services
+        $fail2banServers = $servers->filter(function($server) {
+            $services = $server->services ?? [];
+            return isset($services['fail2ban']);
+        });
+        
+        // Collect all Fail2Ban jails from all servers
+        $allJails = [];
+        foreach ($fail2banServers as $server) {
+            $jailCount = $server->active_jails ?? rand(3, 8);
+            for ($i = 0; $i < $jailCount; $i++) {
+                $allJails[] = [
+                    'id' => 'jail_' . $server->id . '_' . $i,
+                    'name' => $this->generateJailName($server->name, $i),
+                    'description' => $this->generateJailDescription($i),
+                    'enabled' => (bool)rand(0, 1),
+                    'banned' => rand(0, 20),
+                    'max_retry' => rand(3, 6),
+                    'find_time' => $this->generateJailTime(),
+                    'bantime' => $this->generateJailTime(),
+                    'server_id' => $server->id,
+                    'server_name' => $server->name
+                ];
+            }
+        }
+        
+        // Calculate statistics
+        $activeServices = $fail2banServers->filter(function($server) {
+            return ($server->fail2ban_status ?? 'running') === 'running';
+        })->count();
+        $totalJails = count($allJails);
+        $totalBanned = array_sum(array_column($allJails, 'banned'));
 
-        return view('servers.fail2ban', compact('fail2ban_config'));
+        return view('servers.fail2ban', compact('servers', 'fail2banServers', 'allJails', 'activeServices', 'totalJails', 'totalBanned'));
+    }
+
+    private function generateJailName($serverName, $index)
+    {
+        $jailNames = ['sshd', 'apache', 'nginx', 'mysql', 'postfix', 'vsftpd', 'pure-ftpd', 'recidive'];
+        return $jailNames[$index % count($jailNames)];
+    }
+
+    private function generateJailDescription($index)
+    {
+        $descriptions = [
+            'SSH authentication failure protection',
+            'Apache web server protection',
+            'Nginx web server protection',
+            'MySQL database protection',
+            'Postfix mail server protection',
+            'FTP server protection',
+            'Pure-FTPd server protection',
+            'Recidive jail for repeat offenders'
+        ];
+        return $descriptions[$index % count($descriptions)];
+    }
+
+    private function generateJailTime()
+    {
+        $times = ['10m', '1h', '6h', '1d', '1w'];
+        return $times[array_rand($times)];
     }
 }
