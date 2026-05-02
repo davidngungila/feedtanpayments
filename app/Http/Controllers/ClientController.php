@@ -425,6 +425,16 @@ class ClientController extends Controller
                 $bandwidthUsed = rand(10, 200) . '.' . rand(0, 9);
                 $bandwidthLimit = rand(100, 500);
                 $usagePercent = ($bandwidthUsed / $bandwidthLimit) * 100;
+                
+                // Generate daily usage data for the last 7 days
+                $dailyUsage = [];
+                for ($i = 6; $i >= 0; $i--) {
+                    $dailyUsage[] = [
+                        'date' => now()->subDays($i)->format('Y-m-d'),
+                        'usage' => rand(1, 20) . '.' . rand(0, 9) . ' GB'
+                    ];
+                }
+                
                 return [
                     'id' => $client->id,
                     'name' => $client->name,
@@ -433,7 +443,8 @@ class ClientController extends Controller
                     'bandwidth_used' => $bandwidthUsed,
                     'bandwidth_limit' => $bandwidthLimit,
                     'usage_percent' => $usagePercent,
-                    'peak_day' => now()->subDays(rand(1, 7))->format('Y-m-d')
+                    'peak_day' => now()->subDays(rand(1, 7))->format('Y-m-d'),
+                    'daily_usage' => $dailyUsage
                 ];
             })
         ];
