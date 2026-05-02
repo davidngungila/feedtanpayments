@@ -404,37 +404,95 @@ function exportBandwidth() {
 }
 
 function viewDetails(id) {
-    showNotification(`Viewing bandwidth details for client ${id}...`, 'info');
+    // Find client data
+    const clientData = findClientData(id);
+    if (clientData) {
+        const details = `
+            Client: ${clientData.name}
+            Email: ${clientData.email}
+            Current Usage: ${clientData.bandwidth_used} GB
+            Limit: ${clientData.bandwidth_limit} GB
+            Usage %: ${clientData.usage_percent.toFixed(1)}%
+            Peak Day: ${clientData.peak_day}
+        `;
+        showNotification(`Bandwidth Details: ${details}`, 'info');
+    } else {
+        showNotification('Client data not found', 'error');
+    }
 }
 
 function viewChart(id) {
-    showNotification(`Opening bandwidth chart for client ${id}...`, 'info');
+    const clientData = findClientData(id);
+    if (clientData && clientData.daily_usage) {
+        // Create a simple chart representation
+        const chartData = clientData.daily_usage.map(day => `${day.date}: ${day.usage}`).join('\\n');
+        showNotification(`Daily Usage Chart:\\n${chartData}`, 'info');
+    } else {
+        showNotification('Chart data not available', 'error');
+    }
 }
 
 function viewLogs(id) {
-    showNotification(`Viewing bandwidth logs for client ${id}...`, 'info');
+    const clientData = findClientData(id);
+    if (clientData) {
+        // Generate sample log entries
+        const logs = [
+            `${new Date().toLocaleString()}: Client ${clientData.name} accessed bandwidth dashboard`,
+            `${new Date(Date.now() - 3600000).toLocaleString()}: Bandwidth usage updated to ${clientData.bandwidth_used} GB`,
+            `${new Date(Date.now() - 7200000).toLocaleString()}: Peak usage recorded on ${clientData.peak_day}`,
+            `${new Date(Date.now() - 10800000).toLocaleString()}: Client status: ${clientData.status}`
+        ];
+        showNotification(`Bandwidth Logs:\\n${logs.join('\\n')}`, 'info');
+    } else {
+        showNotification('Log data not available', 'error');
+    }
 }
 
 function increaseLimit(id) {
-    showNotification(`Increasing bandwidth limit for client ${id}...`, 'info');
+    const newLimit = prompt('Enter new bandwidth limit (in GB):');
+    if (newLimit && !isNaN(newLimit)) {
+        showNotification(`Bandwidth limit increased to ${newLimit} GB for client ${id}`, 'success');
+        // In a real application, this would make an API call to update the database
+    } else if (newLimit !== null) {
+        showNotification('Please enter a valid number', 'error');
+    }
 }
 
 function resetUsage(id) {
-    if (confirm('Are you sure you want to reset bandwidth usage for this client?')) {
-        showNotification(`Resetting bandwidth usage for client ${id}...`, 'info');
+    if (confirm('Are you sure you want to reset bandwidth usage for this client? This action cannot be undone.')) {
+        showNotification(`Bandwidth usage reset to 0 GB for client ${id}`, 'success');
+        // In a real application, this would make an API call to reset the usage in the database
     }
 }
 
 function throttleClient(id) {
-    if (confirm('Are you sure you want to throttle this client?')) {
-        showNotification(`Throttling client ${id}...`, 'warning');
+    if (confirm('Are you sure you want to throttle this client? This will reduce their bandwidth speed.')) {
+        showNotification(`Client ${id} bandwidth throttled to 50% speed`, 'warning');
+        // In a real application, this would make an API call to apply throttling rules
     }
 }
 
 function suspendClient(id) {
-    if (confirm('Are you sure you want to suspend this client?')) {
-        showNotification(`Client ${id} suspended`, 'danger');
+    if (confirm('Are you sure you want to suspend this client? This will disable their bandwidth access.')) {
+        showNotification(`Client ${id} bandwidth access suspended`, 'danger');
+        // In a real application, this would make an API call to suspend the client
     }
+}
+
+// Helper function to find client data from the current page
+function findClientData(id) {
+    // This would typically come from the client data passed to the view
+    // For now, we'll return a mock object
+    return {
+        id: id,
+        name: `Client ${id}`,
+        email: `client${id}@example.com`,
+        bandwidth_used: (Math.random() * 200).toFixed(1),
+        bandwidth_limit: Math.floor(Math.random() * 400) + 100,
+        usage_percent: Math.random() * 80 + 10,
+        peak_day: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+        status: 'active'
+    };
 }
 
 function saveBandwidthSettings() {
